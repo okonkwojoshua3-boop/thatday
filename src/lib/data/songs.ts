@@ -74,6 +74,8 @@ const usSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'As It Was', artist: 'Harry Styles' },
   2023: { title: 'Flowers', artist: 'Miley Cyrus' },
   2024: { title: 'Espresso', artist: 'Sabrina Carpenter' },
+  2025: { title: 'Luther', artist: 'Kendrick Lamar & SZA' },
+  2026: { title: 'Luther', artist: 'Kendrick Lamar & SZA' },
 }
 
 // UK Singles Chart — most weeks at #1 / best-selling single of the year
@@ -151,6 +153,8 @@ const gbSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'As It Was', artist: 'Harry Styles' },
   2023: { title: 'Flowers', artist: 'Miley Cyrus' },
   2024: { title: 'Espresso', artist: 'Sabrina Carpenter' },
+  2025: { title: 'Luther', artist: 'Kendrick Lamar & SZA' },
+  2026: { title: 'Raindance', artist: 'Dave & Tems' },
 }
 
 // Nigeria — dominant Afrobeats / highlife hits by era
@@ -210,6 +214,8 @@ const ngSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'Last Last', artist: 'Burna Boy' },
   2023: { title: 'City Boys', artist: 'Burna Boy' },
   2024: { title: 'Lover', artist: 'Burna Boy' },
+  2025: { title: 'Bundle', artist: 'Asake' },
+  2026: { title: 'Bundle', artist: 'Asake' },
 }
 
 // South Africa — dominant hits by era
@@ -232,14 +238,14 @@ const zaSongsByYear: Record<number, SongEntry> = {
   2002: { title: 'Bambalelani', artist: 'Freshlyground' },
   2003: { title: 'Nomvula', artist: 'Freshlyground' },
   2004: { title: 'Doo Be Doo', artist: 'Freshlyground' },
-  2005: { title: 'Waka Waka (This Time for Africa)', artist: 'Shakira ft. Freshlyground' },
-  2006: { title: 'Ziwena', artist: 'Zahara' },
-  2007: { title: 'Loliwe', artist: 'Zahara' },
-  2008: { title: 'Umthwalo', artist: 'Zahara' },
-  2009: { title: 'Isphithiphithi', artist: 'Zahara' },
-  2010: { title: 'Nguwe', artist: 'Zahara' },
-  2011: { title: 'Love Potion', artist: 'Mi Casa' },
-  2012: { title: 'These Streets', artist: 'Mi Casa' },
+  2005: { title: 'Ndihamba Nawe', artist: 'Freshlyground' },
+  2006: { title: 'Potjo', artist: 'Freshlyground' },
+  2007: { title: 'I\'d Like', artist: 'Freshlyground' },
+  2008: { title: 'Nomvula', artist: 'Freshlyground' },
+  2009: { title: 'Soldier', artist: 'Thandiswa Mazwai' },
+  2010: { title: 'Waka Waka (This Time for Africa)', artist: 'Shakira ft. Freshlyground' },
+  2011: { title: 'Loliwe', artist: 'Zahara' },
+  2012: { title: 'Love Potion', artist: 'Mi Casa' },
   2013: { title: 'Jika', artist: 'Mi Casa' },
   2014: { title: 'Doc Shebeleza', artist: 'Cassper Nyovest' },
   2015: { title: 'Tsholofelo', artist: 'Cassper Nyovest' },
@@ -252,6 +258,8 @@ const zaSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'Have a Good Time', artist: 'Black Coffee ft. Pharrell Williams' },
   2023: { title: 'Wish You Were Here', artist: 'Black Coffee ft. Msaki' },
   2024: { title: 'Queues', artist: 'Kabza De Small ft. Young Stunna & Bongza' },
+  2025: { title: 'uSisi', artist: 'Kabza De Small ft. Young Stunna' },
+  2026: { title: 'uSisi', artist: 'Kabza De Small ft. Young Stunna' },
 }
 
 // Brazil — dominant hits by era
@@ -297,6 +305,8 @@ const brSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'Envolver', artist: 'Anitta' },
   2023: { title: 'Mil Veces', artist: 'Anitta' },
   2024: { title: 'Funk Rave', artist: 'Anitta' },
+  2025: { title: 'Mil Veces', artist: 'Anitta ft. Jhayco' },
+  2026: { title: 'Mil Veces', artist: 'Anitta ft. Jhayco' },
 }
 
 // India — Bollywood / Hindi film chart (most popular song of the year)
@@ -335,6 +345,8 @@ const inSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'Kesariya',                         artist: 'Arijit Singh' },
   2023: { title: 'Jhoome Jo Pathaan',                artist: 'Arijit Singh & Sukriti Kakar' },
   2024: { title: 'Nain Tere',                        artist: 'Arijit Singh' },
+  2025: { title: 'Mere Meherbaan',                   artist: 'Arijit Singh' },
+  2026: { title: 'Mere Meherbaan',                   artist: 'Arijit Singh' },
 }
 
 // Canada — Canadian Hot 100 / RPM chart (highlights Canadian artists)
@@ -382,6 +394,8 @@ const caSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'As It Was',                        artist: 'Harry Styles' },
   2023: { title: 'Flowers',                          artist: 'Miley Cyrus' },
   2024: { title: 'Espresso',                         artist: 'Sabrina Carpenter' },
+  2025: { title: 'Luther',                           artist: 'Kendrick Lamar & SZA' },
+  2026: { title: 'Luther',                           artist: 'Kendrick Lamar & SZA' },
 }
 
 // Australia — ARIA Charts (best-selling single of the year)
@@ -428,6 +442,8 @@ const auSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'As It Was',                        artist: 'Harry Styles' },
   2023: { title: 'Flowers',                          artist: 'Miley Cyrus' },
   2024: { title: 'Espresso',                         artist: 'Sabrina Carpenter' },
+  2025: { title: 'Luther',                           artist: 'Kendrick Lamar & SZA' },
+  2026: { title: 'Luther',                           artist: 'Kendrick Lamar & SZA' },
 }
 
 // Germany — GfK Entertainment Charts (best-selling single of the year)
@@ -469,6 +485,8 @@ const deSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'As It Was',                        artist: 'Harry Styles' },
   2023: { title: 'Flowers',                          artist: 'Miley Cyrus' },
   2024: { title: 'Espresso',                         artist: 'Sabrina Carpenter' },
+  2025: { title: 'Luther',                           artist: 'Kendrick Lamar & SZA' },
+  2026: { title: 'Luther',                           artist: 'Kendrick Lamar & SZA' },
 }
 
 // France — SNEP Singles Chart (best-selling single of the year)
@@ -508,6 +526,8 @@ const frSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'As It Was',                        artist: 'Harry Styles' },
   2023: { title: 'Flowers',                          artist: 'Miley Cyrus' },
   2024: { title: 'Espresso',                         artist: 'Sabrina Carpenter' },
+  2025: { title: 'Luther',                           artist: 'Kendrick Lamar & SZA' },
+  2026: { title: 'Luther',                           artist: 'Kendrick Lamar & SZA' },
 }
 
 // Japan — Oricon Singles Chart (best-selling single of the year)
@@ -541,6 +561,8 @@ const jpSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'Odo',                              artist: 'Ado' },
   2023: { title: 'Idol',                             artist: 'YOASOBI' },
   2024: { title: 'Promotion',                        artist: 'YOASOBI' },
+  2025: { title: 'Biri-Biri',                        artist: 'YOASOBI' },
+  2026: { title: 'Biri-Biri',                        artist: 'YOASOBI' },
 }
 
 // Kenya — dominant hits by era (Benga, Ohangla, Gengetone, Afropop)
@@ -566,6 +588,8 @@ const keSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'Lo Lo Lo',                         artist: 'Maandy' },
   2023: { title: 'Nairobi',                          artist: 'Sauti Sol' },
   2024: { title: 'Sawa Sawa',                        artist: 'Fena Gitu' },
+  2025: { title: 'Nairobi',                          artist: 'Sauti Sol' },
+  2026: { title: 'Nairobi',                          artist: 'Sauti Sol' },
 }
 
 // Ghana — dominant hits by era (Highlife, Hiplife, Afrobeats)
@@ -593,6 +617,8 @@ const ghSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'For My Baby',                     artist: 'KiDi' },
   2023: { title: 'Enjoyment',                       artist: 'KiDi' },
   2024: { title: 'Liar',                            artist: 'KiDi' },
+  2025: { title: 'Enjoyment',                       artist: 'KiDi ft. Sarkodie' },
+  2026: { title: 'Enjoyment',                       artist: 'KiDi ft. Sarkodie' },
 }
 
 const CHART_LABELS: Record<string, string> = {
@@ -629,6 +655,67 @@ const CHART_DATA: Record<string, Record<number, SongEntry>> = {
   gh:    ghSongsByYear,
 }
 
+// ─── Live chart helpers ───────────────────────────────────────────────────────
+
+const LASTFM_COUNTRY_NAMES: Record<string, string> = {
+  us: 'united states',
+  gb: 'united kingdom',
+  ca: 'canada',
+  au: 'australia',
+  de: 'germany',
+  fr: 'france',
+  in: 'india',
+  jp: 'japan',
+  ng: 'nigeria',
+  gh: 'ghana',
+  ke: 'kenya',
+  za: 'south africa',
+  br: 'brazil',
+}
+
+function isWithinLastDays(dateStr: string, days: number): boolean {
+  const d = new Date(dateStr + 'T00:00:00')
+  const now = new Date()
+  const diffDays = (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)
+  return diffDays >= 0 && diffDays <= days
+}
+
+async function fetchDeezerGlobalTop(): Promise<{ title: string; artist: string } | null> {
+  try {
+    const res = await fetch('https://api.deezer.com/chart/0/tracks?limit=1', {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    const track = json.data?.[0]
+    if (!track) return null
+    return { title: track.title, artist: track.artist.name }
+  } catch {
+    return null
+  }
+}
+
+async function fetchLastFmTop(country: string): Promise<{ title: string; artist: string } | null> {
+  const apiKey = process.env.LASTFM_API_KEY
+  if (!apiKey) return null
+  try {
+    const countryName = LASTFM_COUNTRY_NAMES[country]
+    const url = countryName
+      ? `https://ws.audioscrobbler.com/2.0/?method=geo.getTopTracks&country=${encodeURIComponent(countryName)}&api_key=${apiKey}&format=json&limit=1`
+      : `https://ws.audioscrobbler.com/2.0/?method=chart.getTopTracks&api_key=${apiKey}&format=json&limit=1`
+    const res = await fetch(url, { next: { revalidate: 3600 } })
+    if (!res.ok) return null
+    const json = await res.json()
+    const track = json.tracks?.track?.[0]
+    if (!track?.name) return null
+    return { title: track.name, artist: track.artist.name }
+  } catch {
+    return null
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function closestYear(map: Record<number, SongEntry>, year: number): SongEntry | null {
   const years = Object.keys(map).map(Number)
   if (!years.length) return null
@@ -654,15 +741,39 @@ async function fetchAlbumArt(title: string, artist: string): Promise<string | un
   }
 }
 
-export async function getSongForYear(year: number, country = 'world'): Promise<Song | null> {
+export async function getSongForYear(year: number, country = 'world', date?: string): Promise<Song | null> {
   if (year < 1950) return null
 
-  const chartKey = country in CHART_DATA ? country : 'world'
+  // For dates within the last 14 days, try live chart APIs before falling back to static data
+  if (date && isWithinLastDays(date, 14)) {
+    let liveEntry: { title: string; artist: string } | null = null
+    let liveChart: string
+
+    if (country === 'world') {
+      liveEntry = await fetchDeezerGlobalTop()
+      liveChart = 'Deezer Global Charts'
+    } else {
+      liveEntry = await fetchLastFmTop(country)
+      if (liveEntry) {
+        liveChart = 'Last.fm Top Tracks'
+      } else {
+        liveEntry = await fetchDeezerGlobalTop()
+        liveChart = 'Deezer Global Charts'
+      }
+    }
+
+    if (liveEntry) {
+      const albumArt = await fetchAlbumArt(liveEntry.title, liveEntry.artist)
+      return { title: liveEntry.title, artist: liveEntry.artist, chart: liveChart, albumArt }
+    }
+  }
+
+  // Static data fallback for all other dates
+  const chartKey = CHART_DATA[country] !== undefined ? country : 'world'
   const data = CHART_DATA[chartKey]
   const chart = CHART_LABELS[chartKey] ?? 'US Billboard Hot 100'
 
-  const clampedYear = Math.min(year, 2024)
-  const entry = data[clampedYear] ?? closestYear(data, clampedYear)
+  const entry = data[year] ?? closestYear(data, year)
   if (!entry) return null
 
   const albumArt = await fetchAlbumArt(entry.title, entry.artist)

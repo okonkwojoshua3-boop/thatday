@@ -58,7 +58,7 @@ export default async function CardPage(props: PageProps<'/card/[id]'>) {
   const { date, isBirthday, country } = decoded
   const { year, month, day } = getDateParts(date)
   const lifeStats = computeLifeStats(date)
-  const song = await getSongForYear(year)
+  const song = await getSongForYear(year, country, date)
   const events = await getEventsForDate(month, day, country)
   const event = events.find((e) => e.year <= year) ?? events[0] ?? null
 

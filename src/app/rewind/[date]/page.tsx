@@ -52,7 +52,7 @@ export default async function RewindPage(props: PageProps<'/rewind/[date]'>) {
     getPeopleForDate(month, day, country),
   ])
 
-  const song = await getSongForYear(year, country)
+  const song = await getSongForYear(year, country, date)
   const { costs, items: costItems, currencySymbol, currencyCode } = getCostsForYear(year, country)
   const lifeStats = computeLifeStats(date)
 
