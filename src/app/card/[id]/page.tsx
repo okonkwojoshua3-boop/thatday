@@ -77,7 +77,7 @@ export default async function CardPage(props: PageProps<'/card/[id]'>) {
 
         {/* Postcard — tilted -5 degrees */}
         <div
-          className="relative rounded-xl border border-[#ddd0b8] overflow-hidden -rotate-[5deg]"
+          className="relative rounded-xl border border-[#ddd0b8] overflow-hidden"
           style={{
             background: '#fdf8ee',
             boxShadow:
@@ -164,7 +164,7 @@ export default async function CardPage(props: PageProps<'/card/[id]'>) {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-2.5 -rotate-[5deg]">
+        <div className="flex gap-2.5">
           <Link
             href={`/rewind/${date}${country !== 'world' ? `?country=${country}` : ''}`}
             className="flex-1 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-center text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 transition-all font-medium"
