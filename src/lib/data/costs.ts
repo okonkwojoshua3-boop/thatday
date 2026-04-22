@@ -146,21 +146,221 @@ const BR_ITEMS: CostItem[] = [
   { key: 'movieTicket', label: 'Cinema ticket',      emoji: '🎬' },
 ]
 
+// ── India (INR) — petrol/litre, bread, rice/kg, chai, movie ticket, auto fare ─
+// Sources: PPAC fuel data, RBI CPI, FICCI Multiplex reports
+const inCosts: YearMap = {
+  1960: { petrol: 0.30,  bread: 0.25,  rice: 0.30,  chai: 0.05,  movieTicket: 0.30,  autoFare: 0.10  },
+  1970: { petrol: 0.57,  bread: 0.50,  rice: 0.50,  chai: 0.10,  movieTicket: 0.50,  autoFare: 0.20  },
+  1980: { petrol: 1.97,  bread: 1.20,  rice: 1.50,  chai: 0.25,  movieTicket: 1.50,  autoFare: 0.50  },
+  1990: { petrol: 8.50,  bread: 3.00,  rice: 4.00,  chai: 0.75,  movieTicket: 7.00,  autoFare: 2.50  },
+  2000: { petrol: 22.00, bread: 10.00, rice: 12.00, chai: 2.00,  movieTicket: 40.00, autoFare: 8.00  },
+  2005: { petrol: 40.00, bread: 15.00, rice: 18.00, chai: 4.00,  movieTicket: 80.00, autoFare: 12.00 },
+  2010: { petrol: 55.00, bread: 20.00, rice: 25.00, chai: 6.00,  movieTicket: 120.00, autoFare: 20.00 },
+  2015: { petrol: 62.00, bread: 30.00, rice: 35.00, chai: 8.00,  movieTicket: 150.00, autoFare: 30.00 },
+  2020: { petrol: 71.00, bread: 40.00, rice: 45.00, chai: 12.00, movieTicket: 200.00, autoFare: 40.00 },
+  2024: { petrol: 95.00, bread: 55.00, rice: 65.00, chai: 20.00, movieTicket: 280.00, autoFare: 60.00 },
+}
+
+const IN_ITEMS: CostItem[] = [
+  { key: 'petrol',      label: 'Litre of petrol',  emoji: '⛽' },
+  { key: 'bread',       label: 'Loaf of bread',    emoji: '🍞' },
+  { key: 'rice',        label: '1 kg of rice',     emoji: '🍚' },
+  { key: 'chai',        label: 'Cup of chai',       emoji: '🍵' },
+  { key: 'movieTicket', label: 'Movie ticket',      emoji: '🎬' },
+  { key: 'autoFare',    label: 'Auto-rickshaw fare',emoji: '🛺' },
+]
+
+// ── Canada (CAD) — gas/litre, bread, eggs, coffee, movie, new car ─────────────
+const caCosts: YearMap = {
+  1950: { gas: 0.26, bread: 0.15, eggs: 0.55, coffee: 0.08, movieTicket: 0.45, newCar: 1500 },
+  1960: { gas: 0.34, bread: 0.23, eggs: 0.52, coffee: 0.15, movieTicket: 0.75, newCar: 2700 },
+  1970: { gas: 0.44, bread: 0.30, eggs: 0.60, coffee: 0.20, movieTicket: 1.50, newCar: 3600 },
+  1980: { gas: 1.25, bread: 0.90, eggs: 1.30, coffee: 0.55, movieTicket: 4.00, newCar: 9500 },
+  1990: { gas: 0.55, bread: 1.60, eggs: 1.80, coffee: 1.00, movieTicket: 7.00, newCar: 16000 },
+  2000: { gas: 0.72, bread: 2.20, eggs: 2.40, coffee: 1.60, movieTicket: 10.00, newCar: 24000 },
+  2010: { gas: 1.03, bread: 3.00, eggs: 3.20, coffee: 2.20, movieTicket: 13.00, newCar: 29000 },
+  2015: { gas: 1.20, bread: 3.30, eggs: 4.00, coffee: 2.50, movieTicket: 15.00, newCar: 33500 },
+  2020: { gas: 1.10, bread: 3.60, eggs: 4.40, coffee: 2.80, movieTicket: 16.00, newCar: 39000 },
+  2024: { gas: 1.65, bread: 4.80, eggs: 5.80, coffee: 3.80, movieTicket: 18.00, newCar: 50000 },
+}
+
+const CA_ITEMS: CostItem[] = [
+  { key: 'gas',         label: 'Litre of gas',    emoji: '⛽' },
+  { key: 'bread',       label: 'Loaf of bread',   emoji: '🍞' },
+  { key: 'eggs',        label: 'Dozen eggs',       emoji: '🥚' },
+  { key: 'coffee',      label: 'Cup of coffee',   emoji: '☕' },
+  { key: 'movieTicket', label: 'Movie ticket',     emoji: '🎬' },
+  { key: 'newCar',      label: 'Average new car',  emoji: '🚗' },
+]
+
+// ── Australia (AUD) — petrol/litre, bread, eggs, flat white, beer, movie ──────
+const auCosts: YearMap = {
+  1960: { petrol: 0.24, bread: 0.18, eggs: 0.40, flatWhite: 0.15, beer: 0.10, movieTicket: 0.35 },
+  1970: { petrol: 0.30, bread: 0.25, eggs: 0.55, flatWhite: 0.22, beer: 0.18, movieTicket: 0.60 },
+  1980: { petrol: 0.65, bread: 0.65, eggs: 1.00, flatWhite: 0.60, beer: 0.55, movieTicket: 3.00 },
+  1990: { petrol: 0.60, bread: 1.30, eggs: 2.00, flatWhite: 1.50, beer: 1.80, movieTicket: 8.00 },
+  2000: { petrol: 0.92, bread: 2.20, eggs: 2.80, flatWhite: 2.50, beer: 3.50, movieTicket: 12.00 },
+  2010: { petrol: 1.35, bread: 3.00, eggs: 4.20, flatWhite: 3.60, beer: 6.00, movieTicket: 16.00 },
+  2015: { petrol: 1.30, bread: 3.50, eggs: 5.00, flatWhite: 4.00, beer: 7.50, movieTicket: 19.00 },
+  2020: { petrol: 1.25, bread: 3.80, eggs: 5.80, flatWhite: 4.50, beer: 9.00, movieTicket: 22.00 },
+  2024: { petrol: 2.10, bread: 5.20, eggs: 8.00, flatWhite: 5.50, beer: 11.50, movieTicket: 26.00 },
+}
+
+const AU_ITEMS: CostItem[] = [
+  { key: 'petrol',      label: 'Litre of petrol',  emoji: '⛽' },
+  { key: 'bread',       label: 'Loaf of bread',    emoji: '🍞' },
+  { key: 'eggs',        label: 'Dozen eggs',        emoji: '🥚' },
+  { key: 'flatWhite',   label: 'Flat white coffee', emoji: '☕' },
+  { key: 'beer',        label: 'Stubby of beer',    emoji: '🍺' },
+  { key: 'movieTicket', label: 'Movie ticket',      emoji: '🎬' },
+]
+
+// ── Germany (EUR) — petrol/litre, bread, eggs, coffee, beer 0.5L, cinema ──────
+// Pre-2002 values converted from DEM at 1.955 DEM/EUR
+const deCosts: YearMap = {
+  1960: { petrol: 0.40, bread: 0.35, eggs: 0.22, coffee: 0.45, beer: 0.35, cinema: 0.95 },
+  1970: { petrol: 0.50, bread: 0.50, eggs: 0.32, coffee: 0.60, beer: 0.48, cinema: 1.50 },
+  1980: { petrol: 0.72, bread: 0.75, eggs: 0.55, coffee: 0.90, beer: 0.72, cinema: 3.50 },
+  1985: { petrol: 0.74, bread: 0.95, eggs: 0.70, coffee: 1.10, beer: 0.88, cinema: 4.50 },
+  1990: { petrol: 0.90, bread: 1.20, eggs: 0.95, coffee: 1.50, beer: 1.10, cinema: 6.00 },
+  1995: { petrol: 1.10, bread: 1.50, eggs: 1.20, coffee: 2.00, beer: 1.40, cinema: 7.50 },
+  2000: { petrol: 1.25, bread: 1.80, eggs: 1.50, coffee: 2.80, beer: 1.80, cinema: 9.00 },
+  2005: { petrol: 1.35, bread: 2.10, eggs: 1.80, coffee: 3.50, beer: 2.20, cinema: 10.50 },
+  2010: { petrol: 1.50, bread: 2.30, eggs: 2.10, coffee: 4.00, beer: 2.60, cinema: 12.00 },
+  2015: { petrol: 1.30, bread: 2.50, eggs: 2.50, coffee: 4.50, beer: 3.00, cinema: 13.50 },
+  2020: { petrol: 1.35, bread: 2.70, eggs: 2.80, coffee: 5.00, beer: 3.50, cinema: 14.50 },
+  2024: { petrol: 1.90, bread: 3.60, eggs: 4.20, coffee: 6.50, beer: 4.80, cinema: 17.00 },
+}
+
+const DE_ITEMS: CostItem[] = [
+  { key: 'petrol',  label: 'Litre of petrol',  emoji: '⛽' },
+  { key: 'bread',   label: 'Loaf of bread',    emoji: '🍞' },
+  { key: 'eggs',    label: 'Dozen eggs',        emoji: '🥚' },
+  { key: 'coffee',  label: 'Cup of coffee',    emoji: '☕' },
+  { key: 'beer',    label: 'Beer (0.5L)',       emoji: '🍺' },
+  { key: 'cinema',  label: 'Cinema ticket',    emoji: '🎬' },
+]
+
+// ── France (EUR) — petrol/litre, baguette, wine/bottle, espresso, metro, cinema
+// Pre-2002 values converted from FRF at 6.56 FRF/EUR
+const frCosts: YearMap = {
+  1960: { petrol: 0.48, baguette: 0.12, wine: 0.40, coffee: 0.25, metro: 0.12, cinema: 0.80 },
+  1970: { petrol: 0.62, baguette: 0.18, wine: 0.65, coffee: 0.35, metro: 0.20, cinema: 1.20 },
+  1980: { petrol: 1.20, baguette: 0.40, wine: 2.00, coffee: 0.70, metro: 0.45, cinema: 2.50 },
+  1985: { petrol: 1.40, baguette: 0.55, wine: 3.00, coffee: 1.00, metro: 0.65, cinema: 3.50 },
+  1990: { petrol: 1.25, baguette: 0.75, wine: 4.00, coffee: 1.30, metro: 0.90, cinema: 5.50 },
+  1995: { petrol: 0.98, baguette: 0.85, wine: 5.00, coffee: 1.60, metro: 1.10, cinema: 7.00 },
+  2000: { petrol: 0.92, baguette: 0.90, wine: 6.50, coffee: 1.90, metro: 1.30, cinema: 8.50 },
+  2005: { petrol: 1.20, baguette: 0.95, wine: 7.50, coffee: 2.30, metro: 1.50, cinema: 9.50 },
+  2010: { petrol: 1.40, baguette: 1.00, wine: 8.50, coffee: 2.70, metro: 1.70, cinema: 10.50 },
+  2015: { petrol: 1.30, baguette: 1.08, wine: 9.50, coffee: 3.20, metro: 1.80, cinema: 12.00 },
+  2020: { petrol: 1.35, baguette: 1.15, wine: 10.50, coffee: 3.80, metro: 1.90, cinema: 13.50 },
+  2024: { petrol: 1.80, baguette: 1.40, wine: 13.00, coffee: 5.00, metro: 2.15, cinema: 15.00 },
+}
+
+const FR_ITEMS: CostItem[] = [
+  { key: 'petrol',   label: 'Litre of petrol',    emoji: '⛽' },
+  { key: 'baguette', label: 'Baguette',            emoji: '🥖' },
+  { key: 'wine',     label: 'Bottle of wine',      emoji: '🍷' },
+  { key: 'coffee',   label: 'Espresso',            emoji: '☕' },
+  { key: 'metro',    label: 'Metro ticket',         emoji: '🚇' },
+  { key: 'cinema',   label: 'Cinema ticket',        emoji: '🎬' },
+]
+
+// ── Japan (JPY) — petrol/litre, rice/5kg, ramen bowl, sushi plate, metro, cinema
+const jpCosts: YearMap = {
+  1960: { petrol: 15,  rice: 280,  ramen: 30,  sushi: 60,   metro: 10,  cinema: 120  },
+  1970: { petrol: 32,  rice: 680,  ramen: 80,  sushi: 150,  metro: 20,  cinema: 370  },
+  1980: { petrol: 90,  rice: 1600, ramen: 280, sushi: 400,  metro: 80,  cinema: 900  },
+  1985: { petrol: 85,  rice: 1800, ramen: 380, sushi: 550,  metro: 110, cinema: 1300 },
+  1990: { petrol: 115, rice: 2200, ramen: 450, sushi: 700,  metro: 140, cinema: 1600 },
+  2000: { petrol: 96,  rice: 2100, ramen: 520, sushi: 800,  metro: 160, cinema: 1800 },
+  2005: { petrol: 120, rice: 2000, ramen: 550, sushi: 850,  metro: 170, cinema: 1800 },
+  2010: { petrol: 128, rice: 1950, ramen: 580, sushi: 900,  metro: 175, cinema: 1800 },
+  2015: { petrol: 145, rice: 2100, ramen: 620, sushi: 1000, metro: 180, cinema: 1800 },
+  2020: { petrol: 128, rice: 2200, ramen: 680, sushi: 1100, metro: 190, cinema: 1800 },
+  2024: { petrol: 178, rice: 2900, ramen: 950, sushi: 1400, metro: 205, cinema: 2000 },
+}
+
+const JP_ITEMS: CostItem[] = [
+  { key: 'petrol', label: 'Litre of petrol', emoji: '⛽' },
+  { key: 'rice',   label: '5 kg of rice',    emoji: '🍚' },
+  { key: 'ramen',  label: 'Bowl of ramen',   emoji: '🍜' },
+  { key: 'sushi',  label: 'Sushi plate',     emoji: '🍣' },
+  { key: 'metro',  label: 'Metro ticket',    emoji: '🚇' },
+  { key: 'cinema', label: 'Cinema ticket',   emoji: '🎬' },
+]
+
+// ── Kenya (KES) — petrol/litre, bread, rice/kg, Coke, matatu fare, eggs ───────
+const keCosts: YearMap = {
+  1970: { petrol: 0.35,   bread: 0.40,  rice: 0.80,   coke: 0.30,  matatu: 0.20,  eggs: 0.10  },
+  1980: { petrol: 1.50,   bread: 1.60,  rice: 3.50,   coke: 1.20,  matatu: 0.80,  eggs: 0.40  },
+  1990: { petrol: 6.00,   bread: 5.00,  rice: 10.00,  coke: 4.00,  matatu: 3.00,  eggs: 1.50  },
+  2000: { petrol: 30.00,  bread: 22.00, rice: 50.00,  coke: 18.00, matatu: 12.00, eggs: 5.00  },
+  2005: { petrol: 65.00,  bread: 40.00, rice: 75.00,  coke: 30.00, matatu: 20.00, eggs: 8.00  },
+  2010: { petrol: 90.00,  bread: 55.00, rice: 100.00, coke: 45.00, matatu: 30.00, eggs: 12.00 },
+  2015: { petrol: 105.00, bread: 65.00, rice: 120.00, coke: 55.00, matatu: 40.00, eggs: 15.00 },
+  2020: { petrol: 90.00,  bread: 70.00, rice: 130.00, coke: 60.00, matatu: 45.00, eggs: 18.00 },
+  2024: { petrol: 215.00, bread: 100.00, rice: 180.00, coke: 80.00, matatu: 70.00, eggs: 28.00 },
+}
+
+const KE_ITEMS: CostItem[] = [
+  { key: 'petrol', label: 'Litre of petrol',   emoji: '⛽' },
+  { key: 'bread',  label: 'Loaf of bread',     emoji: '🍞' },
+  { key: 'rice',   label: '1 kg of rice',      emoji: '🍚' },
+  { key: 'coke',   label: 'Bottle of Coke',    emoji: '🥤' },
+  { key: 'matatu', label: 'Matatu (bus) fare', emoji: '🚌' },
+  { key: 'eggs',   label: 'Dozen eggs',         emoji: '🥚' },
+]
+
+// ── Ghana (GHS) — petrol/litre, bread, rice/kg, waakye plate, trotro, eggs ────
+// Values in new GHS (post-2007 redenomination); pre-2007 backward-converted
+const ghCosts: YearMap = {
+  2000: { petrol: 0.50,  bread: 0.28, rice: 0.60,  waakye: 0.22, trotro: 0.12, eggs: 0.08 },
+  2005: { petrol: 0.80,  bread: 0.45, rice: 0.90,  waakye: 0.35, trotro: 0.18, eggs: 0.12 },
+  2008: { petrol: 1.50,  bread: 0.80, rice: 2.00,  waakye: 0.70, trotro: 0.40, eggs: 0.22 },
+  2010: { petrol: 1.80,  bread: 1.00, rice: 2.50,  waakye: 0.90, trotro: 0.50, eggs: 0.28 },
+  2015: { petrol: 4.20,  bread: 2.20, rice: 5.50,  waakye: 1.80, trotro: 1.20, eggs: 0.60 },
+  2020: { petrol: 5.50,  bread: 3.50, rice: 8.00,  waakye: 3.00, trotro: 2.00, eggs: 1.00 },
+  2024: { petrol: 15.00, bread: 10.00, rice: 25.00, waakye: 9.00, trotro: 5.50, eggs: 3.00 },
+}
+
+const GH_ITEMS: CostItem[] = [
+  { key: 'petrol', label: 'Litre of petrol',  emoji: '⛽' },
+  { key: 'bread',  label: 'Loaf of bread',    emoji: '🍞' },
+  { key: 'rice',   label: '1 kg of rice',     emoji: '🍚' },
+  { key: 'waakye', label: 'Waakye plate',     emoji: '🍛' },
+  { key: 'trotro', label: 'Trotro fare',      emoji: '🚌' },
+  { key: 'eggs',   label: 'Dozen eggs',        emoji: '🥚' },
+]
+
 const COUNTRY_COSTS: Record<string, YearMap> = {
   world: usCosts, us: usCosts, gb: gbCosts, ng: ngCosts, za: zaCosts, br: brCosts,
+  in: inCosts, ca: caCosts, au: auCosts, de: deCosts, fr: frCosts,
+  jp: jpCosts, ke: keCosts, gh: ghCosts,
 }
 
 const COUNTRY_ITEMS: Record<string, CostItem[]> = {
   world: US_ITEMS, us: US_ITEMS, gb: GB_ITEMS, ng: NG_ITEMS, za: ZA_ITEMS, br: BR_ITEMS,
+  in: IN_ITEMS, ca: CA_ITEMS, au: AU_ITEMS, de: DE_ITEMS, fr: FR_ITEMS,
+  jp: JP_ITEMS, ke: KE_ITEMS, gh: GH_ITEMS,
 }
 
 const CURRENCY_META: Record<string, { symbol: string; code: string }> = {
-  world: { symbol: '$',  code: 'USD' },
-  us:    { symbol: '$',  code: 'USD' },
-  gb:    { symbol: '£',  code: 'GBP' },
-  ng:    { symbol: '₦',  code: 'NGN' },
-  za:    { symbol: 'R',  code: 'ZAR' },
-  br:    { symbol: 'R$', code: 'BRL' },
+  world: { symbol: '$',   code: 'USD' },
+  us:    { symbol: '$',   code: 'USD' },
+  gb:    { symbol: '£',   code: 'GBP' },
+  ng:    { symbol: '₦',   code: 'NGN' },
+  za:    { symbol: 'R',   code: 'ZAR' },
+  br:    { symbol: 'R$',  code: 'BRL' },
+  in:    { symbol: '₹',   code: 'INR' },
+  ca:    { symbol: 'CA$', code: 'CAD' },
+  au:    { symbol: 'A$',  code: 'AUD' },
+  de:    { symbol: '€',   code: 'EUR' },
+  fr:    { symbol: '€',   code: 'EUR' },
+  jp:    { symbol: '¥',   code: 'JPY' },
+  ke:    { symbol: 'KSh', code: 'KES' },
+  gh:    { symbol: 'GH₵', code: 'GHS' },
 }
 
 function interpolate(map: YearMap, year: number): HistoricalCosts {

@@ -22,6 +22,14 @@ const COUNTRY_KEYWORDS: Record<string, string[]> = {
   ng: ['Nigerian', 'Nigeria', 'Yoruba', 'Igbo', 'Hausa', 'Lagosian'],
   za: ['South African', 'South Africa', 'Afrikaner', 'Zulu', 'Xhosa'],
   br: ['Brazilian', 'Brazil', 'Brasil'],
+  in: ['Indian', 'India', 'Bollywood', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Marathi', 'Punjabi', 'Gujarati'],
+  ca: ['Canadian', 'Canada', 'Quebec', 'Ontario', 'Alberta', 'British Columbia'],
+  au: ['Australian', 'Australia', 'New South Wales', 'Victoria', 'Queensland', 'ANZAC'],
+  de: ['German', 'Germany', 'Bavaria', 'Prussia', 'Austrian', 'Berlin', 'Hamburg'],
+  fr: ['French', 'France', 'Paris', 'Lyon', 'Marseille', 'Normandy', 'Breton'],
+  jp: ['Japanese', 'Japan', 'Tokyo', 'Samurai', 'Shogun', 'Edo', 'Osaka'],
+  ke: ['Kenyan', 'Kenya', 'Nairobi', 'Kikuyu', 'Luo', 'Maasai', 'Mombasa'],
+  gh: ['Ghanaian', 'Ghana', 'Accra', 'Ashanti', 'Akan', 'Gold Coast', 'Fante'],
 }
 
 function matchesPerson(description: string | undefined, text: string, keywords: string[]): boolean {

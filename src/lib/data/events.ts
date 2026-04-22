@@ -23,6 +23,8 @@ const MONTH_NAMES = [
 
 const COUNTRY_LANG: Record<string, string> = {
   world: 'en', us: 'en', gb: 'en', ng: 'en', za: 'en', br: 'pt',
+  in: 'en', ca: 'en', au: 'en', de: 'en', fr: 'en',
+  jp: 'en', ke: 'en', gh: 'en',
 }
 
 // Primary name used in Wikipedia article titles and search (first entry)
@@ -56,6 +58,48 @@ const COUNTRY_KEYWORDS: Record<string, string[]> = {
     'Brazil', 'Brazilian', 'São Paulo', 'Rio de Janeiro', 'Brasília',
     'Amazon', 'Brasil', 'Lula', 'Bolsonaro', 'Dilma', 'Cardoso', 'Vargas',
     'Petrobras', 'Copa', 'Pelé',
+  ],
+  in: [
+    'India', 'Indian', 'Mumbai', 'Delhi', 'Kolkata', 'Chennai', 'Bangalore',
+    'Modi', 'Gandhi', 'Nehru', 'Indira', 'Bollywood', 'BJP', 'Congress',
+    'Lok Sabha', 'ISRO', 'Rajya Sabha', 'Hindi', 'Hindustan',
+  ],
+  ca: [
+    'Canada', 'Canadian', 'Toronto', 'Ottawa', 'Montreal', 'Vancouver',
+    'Quebec', 'Parliament', 'Trudeau', 'RCMP', 'NHL', 'Alberta', 'Ontario',
+    'British Columbia', 'Prairie', 'Confederation',
+  ],
+  au: [
+    'Australia', 'Australian', 'Sydney', 'Melbourne', 'Brisbane', 'Canberra',
+    'ANZAC', 'Parliament', 'Labor', 'Liberal', 'Rudd', 'Turnbull', 'Morrison',
+    'Albanese', 'New South Wales', 'Victoria', 'Queensland', 'ASIO',
+  ],
+  de: [
+    'Germany', 'German', 'Berlin', 'Munich', 'Hamburg', 'Frankfurt',
+    'Bundestag', 'Chancellor', 'Merkel', 'Adenauer', 'Holocaust',
+    'Wehrmacht', 'Nazi', 'Reichstag', 'Bundeswehr', 'DDR', 'Weimar',
+    'Scholz', 'Schröder', 'Kohl',
+  ],
+  fr: [
+    'France', 'French', 'Paris', 'Macron', 'Hollande', 'Sarkozy',
+    'Chirac', 'de Gaulle', 'République', 'Assemblée', 'Résistance',
+    'Élysée', 'Lyon', 'Marseille', 'Normandy', 'Vichy', 'Napoleon',
+  ],
+  jp: [
+    'Japan', 'Japanese', 'Tokyo', 'Osaka', 'Kyoto', 'Emperor',
+    'Hirohito', 'Akihito', 'Naruhito', 'Hiroshima', 'Nagasaki',
+    'Fukushima', 'Toyota', 'Sony', 'Nintendo', 'Shinkansen', 'Meiji',
+    'Shogun', 'Samurai', 'Diet', 'LDP',
+  ],
+  ke: [
+    'Kenya', 'Kenyan', 'Nairobi', 'Mombasa', 'Mau Mau', 'Kenyatta',
+    'Odinga', 'Kibaki', 'Uhuru', 'Ruto', 'Safaricom', 'Maasai',
+    'Kisumu', 'Nakuru', 'Rift Valley',
+  ],
+  gh: [
+    'Ghana', 'Ghanaian', 'Accra', 'Kumasi', 'Nkrumah', 'Rawlings',
+    'Mahama', 'Akufo-Addo', 'Ashanti', 'Gold Coast', 'Volta',
+    'Tamale', 'Cape Coast', 'ECOWAS',
   ],
 }
 

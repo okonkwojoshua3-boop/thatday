@@ -2,10 +2,10 @@ import type { FamousPerson } from '@/types'
 import Image from 'next/image'
 
 const COUNTRY_LABELS: Record<string, string> = {
-  us: 'United States',
-  gb: 'United Kingdom',
-  ng: 'Nigeria',
-  za: 'South Africa',
+  us: 'United States', gb: 'United Kingdom', ca: 'Canada',
+  au: 'Australia',     de: 'Germany',        fr: 'France',
+  in: 'India',         jp: 'Japan',          ng: 'Nigeria',
+  gh: 'Ghana',         ke: 'Kenya',          za: 'South Africa',
   br: 'Brazil',
 }
 

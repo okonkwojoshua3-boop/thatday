@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { decodeCardId } from '@/lib/utils/cardId'
-import { formatDisplayDate, getDateParts, isValidDate } from '@/lib/utils/date'
+import { getDateParts, isValidDate } from '@/lib/utils/date'
 import { computeLifeStats } from '@/lib/stats/lifeStats'
 import { getSongForYear } from '@/lib/data/songs'
 import { getEventsForDate } from '@/lib/data/events'
@@ -13,11 +13,16 @@ const HOLE_R = 7   // perforation hole radius
 const HOLE_GAP = 17 // center-to-center spacing
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  world: '🌍', us: '🇺🇸', gb: '🇬🇧', ng: '🇳🇬', za: '🇿🇦', br: '🇧🇷',
+  world: '🌍', us: '🇺🇸', gb: '🇬🇧', ca: '🇨🇦', au: '🇦🇺',
+  de: '🇩🇪',   fr: '🇫🇷', in: '🇮🇳', jp: '🇯🇵', ng: '🇳🇬',
+  gh: '🇬🇭',   ke: '🇰🇪', za: '🇿🇦', br: '🇧🇷',
 }
 const COUNTRY_NAMES: Record<string, string> = {
-  world: 'Worldwide', us: 'United States', gb: 'United Kingdom',
-  ng: 'Nigeria', za: 'South Africa', br: 'Brazil',
+  world: 'Worldwide',   us: 'United States', gb: 'United Kingdom',
+  ca: 'Canada',         au: 'Australia',     de: 'Germany',
+  fr: 'France',         in: 'India',         jp: 'Japan',
+  ng: 'Nigeria',        gh: 'Ghana',         ke: 'Kenya',
+  za: 'South Africa',   br: 'Brazil',
 }
 
 const MONTH_ABBR = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
