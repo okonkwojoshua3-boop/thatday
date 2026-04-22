@@ -1,26 +1,20 @@
-import type { HistoricalCosts } from '@/types'
+import type { HistoricalCosts, CostItem } from '@/types'
 
-const items: { key: keyof HistoricalCosts; label: string; emoji: string }[] = [
-  { key: 'gas',         label: 'Gallon of fuel',  emoji: '⛽' },
-  { key: 'bread',       label: 'Loaf of bread',   emoji: '🍞' },
-  { key: 'movieTicket', label: 'Movie ticket',     emoji: '🎬' },
-  { key: 'eggs',        label: 'Dozen eggs',       emoji: '🥚' },
-  { key: 'coffee',      label: 'Cup of coffee',    emoji: '☕' },
-  { key: 'newCar',      label: 'Average new car',  emoji: '🚗' },
-]
-
-function formatPrice(value: number, key: keyof HistoricalCosts, symbol: string): string {
-  if (key === 'newCar') return `${symbol}${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+function formatPrice(value: number, symbol: string): string {
+  if (value >= 1000) return `${symbol}${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+  if (value >= 100) return `${symbol}${value.toFixed(0)}`
   return `${symbol}${value.toFixed(2)}`
 }
 
 export default function CostsSection({
   costs,
+  items,
   year,
   currencySymbol = '$',
   currencyCode = 'USD',
 }: {
   costs: HistoricalCosts
+  items: CostItem[]
   year: number
   currencySymbol?: string
   currencyCode?: string
@@ -44,7 +38,7 @@ export default function CostsSection({
             >
               <p className="text-xl mb-2">{emoji}</p>
               <p className="text-zinc-900 font-bold text-lg tabular-nums leading-none">
-                {formatPrice(val, key, currencySymbol)}
+                {formatPrice(val, currencySymbol)}
               </p>
               <p className="text-zinc-400 text-xs mt-1">{label}</p>
             </div>

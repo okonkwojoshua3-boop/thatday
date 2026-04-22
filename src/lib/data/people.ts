@@ -15,13 +15,18 @@ interface WikiResponse {
   births?: WikiBirth[]
 }
 
-// Keywords matched against Wikipedia's short description (e.g. "Nigerian footballer")
+// Keywords matched against Wikipedia's short description and birth text
 const COUNTRY_KEYWORDS: Record<string, string[]> = {
-  us: ['American', 'United States'],
-  gb: ['British', 'English', 'Scottish', 'Welsh', 'Irish', 'Northern Irish'],
-  ng: ['Nigerian', 'Nigeria'],
-  za: ['South African', 'South Africa'],
-  br: ['Brazilian', 'Brazil'],
+  us: ['American', 'United States', 'U.S.'],
+  gb: ['British', 'English', 'Scottish', 'Welsh', 'Irish', 'Northern Irish', 'UK'],
+  ng: ['Nigerian', 'Nigeria', 'Yoruba', 'Igbo', 'Hausa', 'Lagosian'],
+  za: ['South African', 'South Africa', 'Afrikaner', 'Zulu', 'Xhosa'],
+  br: ['Brazilian', 'Brazil', 'Brasil'],
+}
+
+function matchesPerson(description: string | undefined, text: string, keywords: string[]): boolean {
+  const haystack = `${description ?? ''} ${text}`.toLowerCase()
+  return keywords.some((k) => haystack.includes(k.toLowerCase()))
 }
 
 export async function getPeopleForDate(
@@ -33,29 +38,20 @@ export async function getPeopleForDate(
     const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/births/${month}/${day}`
     const res = await fetch(url, {
       headers: { 'User-Agent': 'ThatDay/1.0 (time-capsule app)' },
-      next: { revalidate: 86400 },
+      cache: 'no-store',
     })
     if (!res.ok) return []
     const data: WikiResponse = await res.json()
 
-    // Use full pool so filtering has enough to work with
     const all = (data.births ?? []).filter((b) => b.pages?.[0])
 
     const keywords = country !== 'world' ? (COUNTRY_KEYWORDS[country] ?? []) : []
 
     let pool: typeof all
     if (keywords.length > 0) {
-      const relevant = all.filter((b) =>
-        keywords.some((k) =>
-          b.pages?.[0]?.description?.includes(k) || b.text?.includes(k)
-        )
+      pool = all.filter((b) =>
+        matchesPerson(b.pages?.[0]?.description, b.text, keywords)
       )
-      const rest = all.filter((b) =>
-        !keywords.some((k) =>
-          b.pages?.[0]?.description?.includes(k) || b.text?.includes(k)
-        )
-      )
-      pool = [...relevant, ...rest]
     } else {
       pool = all
     }

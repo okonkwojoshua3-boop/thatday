@@ -48,9 +48,14 @@ export default function DatePicker() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  // Country
+  // Country — persisted in localStorage so navigating back preserves the selection
   const [country, setCountry] = useState('world')
   const [countryOpen, setCountryOpen] = useState(false)
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('thatday-country') : null
+    if (saved && COUNTRIES.some(c => c.code === saved)) setCountry(saved)
+  }, [])
 
   // Date text input
   const [textValue, setTextValue] = useState('')
@@ -163,7 +168,7 @@ export default function DatePicker() {
     startTransition(() => router.push(url))
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) { e.preventDefault(); submitDate() }
+  function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) { e.preventDefault(); submitDate() }
 
   const totalDays = daysInMonth(viewYear, viewMonth)
   const offset = firstDayOfMonth(viewYear, viewMonth)
@@ -241,7 +246,7 @@ export default function DatePicker() {
               <button
                 key={c.code}
                 type="button"
-                onClick={() => { setCountry(c.code); setCountryOpen(false) }}
+                onClick={() => { setCountry(c.code); localStorage.setItem('thatday-country', c.code); setCountryOpen(false) }}
                 className={[
                   'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
                   c.code === country

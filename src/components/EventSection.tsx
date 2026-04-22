@@ -1,8 +1,27 @@
 import Image from 'next/image'
 import type { HistoricalEvent } from '@/types'
 
-export default function EventSection({ events }: { events: HistoricalEvent[] }) {
-  if (!events.length) return null
+const COUNTRY_LABELS: Record<string, string> = {
+  us: 'United States',
+  gb: 'United Kingdom',
+  ng: 'Nigeria',
+  za: 'South Africa',
+  br: 'Brazil',
+}
+
+export default function EventSection({ events, country = 'world' }: { events: HistoricalEvent[]; country?: string }) {
+  if (!events.length) {
+    if (country === 'world') return null
+    return (
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-4">On This Day in History</h2>
+        <div className="rounded-2xl border border-zinc-100 bg-white px-6 py-8 text-center shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+          <p className="text-2xl mb-2">📰</p>
+          <p className="text-zinc-500 text-sm">No recorded events from {COUNTRY_LABELS[country] ?? country} found for this date.</p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section>

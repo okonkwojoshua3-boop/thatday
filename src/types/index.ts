@@ -22,13 +22,12 @@ export interface FamousPerson {
   thumbnail?: string
 }
 
-export interface HistoricalCosts {
-  gas?: number
-  bread?: number
-  movieTicket?: number
-  eggs?: number
-  newCar?: number
-  coffee?: number
+export type HistoricalCosts = Record<string, number | undefined>
+
+export interface CostItem {
+  key: string
+  label: string
+  emoji: string
 }
 
 export interface LifeStats {

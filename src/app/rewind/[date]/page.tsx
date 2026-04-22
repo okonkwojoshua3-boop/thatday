@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { isValidDate, getDateParts, formatDisplayDate, getMinDate, getMaxDate } from '@/lib/utils/date'
@@ -43,11 +45,12 @@ export default async function RewindPage(props: PageProps<'/rewind/[date]'>) {
   ])
 
   const song = await getSongForYear(year, country)
-  const { costs, currencySymbol, currencyCode } = getCostsForYear(year, country)
+  const { costs, items: costItems, currencySymbol, currencyCode } = getCostsForYear(year, country)
   const lifeStats = computeLifeStats(date)
 
-  const relevantEvents = events.filter((e) => e.year <= year).slice(0, 5)
-  const displayEvents = relevantEvents.length ? relevantEvents : events.slice(0, 5)
+  const displayEvents = country !== 'world'
+    ? events.slice(0, 5)
+    : events.filter((e) => e.year <= year).slice(0, 5)
 
   const cardId = encodeCardId(date, isBirthday)
   const agoLabel = lifeStats.years > 0
@@ -95,9 +98,9 @@ export default async function RewindPage(props: PageProps<'/rewind/[date]'>) {
 
         <LifeStatsSection lifeStats={lifeStats} />
         <SongSection song={song} year={year} />
-        <EventSection events={displayEvents} />
-        <PeopleSection people={people} />
-        <CostsSection costs={costs} year={year} currencySymbol={currencySymbol} currencyCode={currencyCode} />
+        <EventSection events={displayEvents} country={country} />
+        <PeopleSection people={people} country={country} />
+        <CostsSection costs={costs} items={costItems} year={year} currencySymbol={currencySymbol} currencyCode={currencyCode} />
 
         {/* Share section */}
         <div className="rounded-2xl bg-zinc-900 px-6 py-7 flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
