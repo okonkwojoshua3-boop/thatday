@@ -74,6 +74,28 @@ function toHistoricalEvent(e: WikiEvent): HistoricalEvent {
   }
 }
 
+async function fetchPageThumbnails(titles: string[]): Promise<Record<string, string>> {
+  if (!titles.length) return {}
+  const joined = titles.map((t) => encodeURIComponent(t)).join('|')
+  const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${joined}&prop=pageimages&pithumbsize=400&format=json&formatversion=2`
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'ThatDay/1.0 (time-capsule app)' },
+      cache: 'no-store',
+    })
+    if (!res.ok) return {}
+    const data = await res.json()
+    const pages: Array<{ title: string; thumbnail?: { source?: string } }> = data.query?.pages ?? []
+    const map: Record<string, string> = {}
+    for (const p of pages) {
+      if (p.thumbnail?.source) map[p.title] = p.thumbnail.source
+    }
+    return map
+  } catch {
+    return {}
+  }
+}
+
 function cleanSnippet(html: string): string {
   return html
     .replace(/<span[^>]*class="searchmatch"[^>]*>/g, '')
@@ -112,7 +134,6 @@ async function searchCountryDayEvents(
     const events: HistoricalEvent[] = []
     for (const r of results) {
       const combinedText = `${r.title} ${r.snippet}`
-      // Extract the first plausible year from the snippet or title
       const yearMatch = combinedText.match(/\b(1[89]\d{2}|20[0-2]\d)\b/)
       if (!yearMatch) continue
 
@@ -128,7 +149,8 @@ async function searchCountryDayEvents(
       })
     }
 
-    return events
+    const thumbnails = await fetchPageThumbnails(events.map((e) => e.title))
+    return events.map((e) => ({ ...e, thumbnail: thumbnails[e.title] }))
   } catch {
     return []
   }
