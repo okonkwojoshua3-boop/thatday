@@ -55,7 +55,7 @@ export default async function CardPage(props: PageProps<'/card/[id]'>) {
   const decoded = decodeCardId(id)
   if (!decoded || !isValidDate(decoded.date)) notFound()
 
-  const { date, isBirthday } = decoded
+  const { date, isBirthday, country } = decoded
   const { year, month, day } = getDateParts(date)
   const lifeStats = computeLifeStats(date)
   const song = await getSongForYear(year)
@@ -166,7 +166,7 @@ export default async function CardPage(props: PageProps<'/card/[id]'>) {
         {/* Action buttons — match app palette */}
         <div className="flex gap-2.5 rotate-[0.4deg]">
           <Link
-            href={`/rewind/${date}`}
+            href={`/rewind/${date}${country !== 'world' ? `?country=${country}` : ''}`}
             className="flex-1 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-center text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 transition-all font-medium"
           >
             Full Rewind

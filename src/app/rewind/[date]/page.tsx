@@ -52,7 +52,7 @@ export default async function RewindPage(props: PageProps<'/rewind/[date]'>) {
     ? events.slice(0, 5)
     : events.filter((e) => e.year <= year).slice(0, 5)
 
-  const cardId = encodeCardId(date, isBirthday)
+  const cardId = encodeCardId(date, isBirthday, country)
   const agoLabel = lifeStats.years > 0
     ? `${lifeStats.years} years, ${lifeStats.months % 12} months ago`
     : `${lifeStats.days} days ago`
