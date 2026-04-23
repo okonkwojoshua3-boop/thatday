@@ -214,8 +214,8 @@ const ngSongsByYear: Record<number, SongEntry> = {
   2022: { title: 'Last Last', artist: 'Burna Boy' },
   2023: { title: 'City Boys', artist: 'Burna Boy' },
   2024: { title: 'Lover', artist: 'Burna Boy' },
-  2025: { title: 'Bundle', artist: 'Asake' },
-  2026: { title: 'Bundle', artist: 'Asake' },
+  2025: { title: 'Bundle By Bundle', artist: 'Burna Boy' },
+  2026: { title: 'Jogodo', artist: 'Asake & Wizkid' },
 }
 
 // South Africa — dominant hits by era
@@ -1025,8 +1025,8 @@ async function fetchAlbumArt(title: string, artist: string): Promise<string | un
 export async function getSongForYear(year: number, country = 'world', date?: string): Promise<Song | null> {
   if (year < 1950) return null
 
-  // For dates within the last 14 days, try live chart APIs before falling back to static data
-  if (date && isWithinLastDays(date, 14)) {
+  // For dates within the last 90 days, try live chart APIs before falling back to static data
+  if (date && isWithinLastDays(date, 90)) {
     let liveEntry: { title: string; artist: string } | null = null
     let liveChart: string
 
