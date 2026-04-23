@@ -49,6 +49,24 @@ const COUNTRY_KEYWORDS: Record<string, string[]> = {
   gh: ['Ghanaian', 'Ghana', 'Accra', 'Ashanti', 'Akan', 'Gold Coast', 'Fante', 'Kumasi', 'Highlife'],
 }
 
+// Searches TMDB for a person by name and returns their profile photo URL.
+// Used as a last-resort fallback for people missing photos from Wikipedia/Commons.
+async function fetchTmdbPhoto(name: string): Promise<string | undefined> {
+  const apiKey = process.env.TMDB_API_KEY
+  if (!apiKey) return undefined
+  try {
+    const url = `https://api.themoviedb.org/3/search/person?query=${encodeURIComponent(name)}&api_key=${apiKey}&language=en-US&page=1`
+    const res = await fetch(url, { next: { revalidate: 86400 } })
+    if (!res.ok) return undefined
+    const data = await res.json()
+    const profile: string | undefined = data.results?.[0]?.profile_path
+    if (!profile) return undefined
+    return `https://image.tmdb.org/t/p/w185${profile}`
+  } catch {
+    return undefined
+  }
+}
+
 function matchesPerson(description: string | undefined, text: string, keywords: string[]): boolean {
   const haystack = `${description ?? ''} ${text}`.toLowerCase()
   return keywords.some((k) => haystack.includes(k.toLowerCase()))
@@ -182,6 +200,19 @@ async function searchWikidataBornOn(month: number, day: number, country: string)
           }
         }
       } catch { /* best-effort */ }
+    }
+
+    // Step 3: for people still missing a thumbnail, try TMDB in parallel
+    const stillMissing = candidates.filter(
+      (p) => !thumbMap[p.wikiTitle] && !thumbMap[p.name],
+    )
+    if (stillMissing.length) {
+      const tmdbResults = await Promise.all(
+        stillMissing.map((p) => fetchTmdbPhoto(p.name)),
+      )
+      stillMissing.forEach((p, i) => {
+        if (tmdbResults[i]) thumbMap[p.name] = tmdbResults[i]!
+      })
     }
 
     return candidates.map((p) => ({
