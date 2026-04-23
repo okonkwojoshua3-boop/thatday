@@ -61,7 +61,7 @@ async function searchWikidataBornOn(month: number, day: number, country: string)
   if (!qid) return []
 
   const sparql = `
-    SELECT DISTINCT ?person ?personLabel (SAMPLE(?occ) AS ?occupation) ?article (COUNT(DISTINCT ?sitelink) AS ?fame) WHERE {
+    SELECT DISTINCT ?person ?personLabel (SAMPLE(?occ) AS ?occupation) (SAMPLE(?img) AS ?image) ?article (COUNT(DISTINCT ?sitelink) AS ?fame) WHERE {
       ?person wdt:P31 wd:Q5.
       ?person wdt:P569 ?birth.
       FILTER(MONTH(?birth) = ${month} && DAY(?birth) = ${day})
@@ -71,6 +71,7 @@ async function searchWikidataBornOn(month: number, day: number, country: string)
         ?occItem rdfs:label ?occ.
         FILTER(LANG(?occ) = "en")
       }
+      OPTIONAL { ?person wdt:P18 ?img. }
       OPTIONAL {
         ?article schema:about ?person;
                  schema:isPartOf <https://en.wikipedia.org/>.
@@ -99,6 +100,7 @@ async function searchWikidataBornOn(month: number, day: number, country: string)
       occupation: string
       wikiUrl: string
       wikiTitle: string
+      wikidataImage: string
     }> = []
 
     for (const b of bindings) {
@@ -116,12 +118,13 @@ async function searchWikidataBornOn(month: number, day: number, country: string)
         occupation: b.occupation?.value ?? 'Notable figure',
         wikiUrl: articleUrl,
         wikiTitle,
+        wikidataImage: b.image?.value ?? '',
       })
     }
 
     if (!candidates.length) return []
 
-    // Batch-fetch Wikipedia thumbnails for people with English Wikipedia articles
+    // Step 1: batch-fetch Wikipedia thumbnails for people with English Wikipedia articles
     const titlesWithWiki = candidates.filter((p) => p.wikiTitle).map((p) => p.wikiTitle)
     const thumbMap: Record<string, string> = {}
 
@@ -142,14 +145,50 @@ async function searchWikidataBornOn(month: number, day: number, country: string)
             if (page.thumbnail?.source) thumbMap[page.title] = page.thumbnail.source
           }
         }
-      } catch { /* thumbnail fetch is best-effort */ }
+      } catch { /* best-effort */ }
+    }
+
+    // Step 2: for people still missing a thumbnail, use their Wikidata P18 image
+    // via the Wikimedia Commons API to get a proper upload.wikimedia.org URL
+    const missingThumb = candidates.filter(
+      (p) => !thumbMap[p.wikiTitle] && p.wikidataImage,
+    )
+    if (missingThumb.length) {
+      try {
+        const filenames = missingThumb.map((p) =>
+          decodeURIComponent(p.wikidataImage.replace(/.*Special:FilePath\//, '')),
+        )
+        const fileTitles = filenames.map((f) => `File:${f}`).map(encodeURIComponent).join('|')
+        const commonsUrl =
+          `https://commons.wikimedia.org/w/api.php?action=query` +
+          `&titles=${fileTitles}&prop=imageinfo&iiprop=url&iiurlwidth=300` +
+          `&format=json&origin=*`
+        const commonsRes = await fetch(commonsUrl, { next: { revalidate: 86400 } })
+        if (commonsRes.ok) {
+          const commonsData = await commonsRes.json()
+          const pages = Object.values(commonsData.query?.pages ?? {}) as Array<{
+            title?: string
+            imageinfo?: Array<{ thumburl?: string }>
+          }>
+          for (const page of pages) {
+            const thumbUrl = page.imageinfo?.[0]?.thumburl
+            if (!thumbUrl || !page.title) continue
+            const filename = decodeURIComponent(page.title.replace('File:', ''))
+            // Map back to the candidate whose Wikidata image filename matches
+            const candidate = missingThumb.find((p) =>
+              decodeURIComponent(p.wikidataImage.replace(/.*Special:FilePath\//, '')) === filename,
+            )
+            if (candidate) thumbMap[candidate.wikiTitle || candidate.name] = thumbUrl
+          }
+        }
+      } catch { /* best-effort */ }
     }
 
     return candidates.map((p) => ({
       name: p.name,
       profession: p.occupation,
       wikiUrl: p.wikiUrl || undefined,
-      thumbnail: thumbMap[p.wikiTitle] ?? undefined,
+      thumbnail: thumbMap[p.wikiTitle] ?? thumbMap[p.name] ?? undefined,
     }))
   } catch {
     return []
