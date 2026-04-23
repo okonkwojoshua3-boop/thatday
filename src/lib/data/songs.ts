@@ -971,17 +971,43 @@ function closestYear(map: Record<number, SongEntry>, year: number): SongEntry | 
   return map[closest]
 }
 
+const MIX_KEYWORDS = ['mix', 'dj ', 'playlist', 'compilation', 'various', 'karaoke', 'tribute', 'cover version']
+
+function pickBestItunesResult(
+  results: Array<{ artworkUrl100?: string; collectionName?: string; artistName?: string }>,
+  preferredArtist: string,
+): string | undefined {
+  if (!results.length) return undefined
+  const preferred = preferredArtist.toLowerCase()
+
+  // Prefer: artist matches AND not a compilation/mix
+  const best =
+    results.find((r) => {
+      const col = (r.collectionName ?? '').toLowerCase()
+      const art = (r.artistName ?? '').toLowerCase()
+      return art.includes(preferred.split(' ')[0]) && !MIX_KEYWORDS.some((k) => col.includes(k))
+    }) ??
+    // Fallback: any result that isn't a compilation/mix
+    results.find((r) => {
+      const col = (r.collectionName ?? '').toLowerCase()
+      return !MIX_KEYWORDS.some((k) => col.includes(k))
+    }) ??
+    results[0]
+
+  return best?.artworkUrl100
+}
+
 async function fetchAlbumArt(title: string, artist: string): Promise<string | undefined> {
-  // Strategy 1: iTunes full query
+  // Strategy 1: iTunes full query — prefer original release over DJ mixes/compilations
   try {
     const q = encodeURIComponent(`${title} ${artist}`)
     const res = await fetch(
-      `https://itunes.apple.com/search?term=${q}&entity=song&limit=5`,
+      `https://itunes.apple.com/search?term=${q}&entity=song&limit=10`,
       { next: { revalidate: 86400 } },
     )
     if (res.ok) {
       const data = await res.json()
-      const url: string | undefined = data.results?.[0]?.artworkUrl100
+      const url = pickBestItunesResult(data.results ?? [], artist)
       if (url) return url.replace('100x100bb', '600x600bb')
     }
   } catch {}
@@ -990,12 +1016,12 @@ async function fetchAlbumArt(title: string, artist: string): Promise<string | un
   try {
     const q = encodeURIComponent(title)
     const res = await fetch(
-      `https://itunes.apple.com/search?term=${q}&entity=song&limit=5`,
+      `https://itunes.apple.com/search?term=${q}&entity=song&limit=10`,
       { next: { revalidate: 86400 } },
     )
     if (res.ok) {
       const data = await res.json()
-      const url: string | undefined = data.results?.[0]?.artworkUrl100
+      const url = pickBestItunesResult(data.results ?? [], artist)
       if (url) return url.replace('100x100bb', '600x600bb')
     }
   } catch {}
