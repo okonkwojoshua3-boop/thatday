@@ -37,70 +37,69 @@ const COUNTRY_KEYWORDS: Record<string, string[]> = {
   gh: ['Ghanaian', 'Ghana', 'Accra', 'Ashanti', 'Akan', 'Gold Coast', 'Fante', 'Kumasi', 'Highlife'],
 }
 
-// Primary search term for supplementary Wikipedia queries
-const COUNTRY_SEARCH_TERMS: Record<string, string> = {
-  us: 'American', gb: 'British', ng: 'Nigerian', za: 'South African',
-  br: 'Brazilian', in: 'Indian', ca: 'Canadian', au: 'Australian',
-  de: 'German', fr: 'French', jp: 'Japanese', ke: 'Kenyan', gh: 'Ghanaian',
-}
-
 function matchesPerson(description: string | undefined, text: string, keywords: string[]): boolean {
   const haystack = `${description ?? ''} ${text}`.toLowerCase()
   return keywords.some((k) => haystack.includes(k.toLowerCase()))
 }
 
-// Supplementary search: queries Wikipedia for "[Country] born [Day] [Month]"
-// Used when the primary "On This Day" API returns fewer than 3 country-specific results.
+// Fetches all members of the Wikipedia category "DD Month births" (e.g. "21 November births"),
+// then batch-fetches descriptions and filters by country keywords.
+// This is far more accurate than free-text search, which returns country/demographic articles.
 async function searchWikipediaBornOn(month: number, day: number, country: string): Promise<FamousPerson[]> {
-  const term = COUNTRY_SEARCH_TERMS[country]
-  if (!term) return []
+  const keywords = COUNTRY_KEYWORDS[country] ?? []
+  if (!keywords.length) return []
 
   const monthName = MONTH_NAMES[month - 1]
-  const query = `${term} born ${day} ${monthName}`
+  const categoryTitle = `Category:${day} ${monthName} births`
 
   try {
-    // Step 1: search for page titles matching the query
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srlimit=15&format=json&origin=*`
-    const searchRes = await fetch(searchUrl, { next: { revalidate: 86400 } })
-    if (!searchRes.ok) return []
-    const searchData = await searchRes.json()
-    const titles: string[] = (searchData.query?.search ?? [])
-      .map((r: { title: string }) => r.title)
-      .slice(0, 10)
+    // Step 1: list all people in the "DD Month births" Wikipedia category (up to 200)
+    const catUrl =
+      `https://en.wikipedia.org/w/api.php?action=query&list=categorymembers` +
+      `&cmtitle=${encodeURIComponent(categoryTitle)}&cmlimit=200&cmtype=page` +
+      `&format=json&origin=*`
+    const catRes = await fetch(catUrl, { next: { revalidate: 86400 } })
+    if (!catRes.ok) return []
+    const catData = await catRes.json()
+    const titles: string[] = (catData.query?.categorymembers ?? []).map(
+      (m: { title: string }) => m.title,
+    )
     if (!titles.length) return []
 
-    // Step 2: fetch thumbnail + description for each page in one batch request
-    const detailUrl =
-      `https://en.wikipedia.org/w/api.php?action=query` +
-      `&titles=${titles.map(encodeURIComponent).join('|')}` +
-      `&prop=pageimages|description|info&pithumbsize=300&inprop=url` +
-      `&format=json&origin=*`
-    const detailRes = await fetch(detailUrl, { next: { revalidate: 86400 } })
-    if (!detailRes.ok) return []
-    const detailData = await detailRes.json()
+    // Step 2: batch-fetch thumbnails + descriptions (max 50 titles per request)
+    const results: FamousPerson[] = []
+    for (let i = 0; i < titles.length && results.length < 12; i += 50) {
+      const batch = titles.slice(i, i + 50)
+      const detailUrl =
+        `https://en.wikipedia.org/w/api.php?action=query` +
+        `&titles=${batch.map(encodeURIComponent).join('|')}` +
+        `&prop=pageimages|description|info&pithumbsize=300&inprop=url` +
+        `&format=json&origin=*`
+      const detailRes = await fetch(detailUrl, { next: { revalidate: 86400 } })
+      if (!detailRes.ok) continue
+      const detailData = await detailRes.json()
 
-    const pages = Object.values(detailData.query?.pages ?? {}) as Array<{
-      pageid?: number
-      title: string
-      description?: string
-      thumbnail?: { source?: string }
-      fullurl?: string
-    }>
+      const pages = Object.values(detailData.query?.pages ?? {}) as Array<{
+        pageid?: number
+        title: string
+        description?: string
+        thumbnail?: { source?: string }
+        fullurl?: string
+      }>
 
-    const keywords = COUNTRY_KEYWORDS[country] ?? []
+      for (const p of pages) {
+        if (!p.pageid || p.pageid < 0) continue
+        if (!matchesPerson(p.description, p.title, keywords)) continue
+        results.push({
+          name: p.title.replace(/_/g, ' '),
+          profession: p.description ?? 'Notable figure',
+          wikiUrl: p.fullurl,
+          thumbnail: p.thumbnail?.source,
+        })
+      }
+    }
 
-    return pages
-      .filter((p) => {
-        if (!p.pageid || p.pageid < 0) return false
-        // Only keep pages whose description/title still matches country keywords
-        return matchesPerson(p.description, p.title, keywords)
-      })
-      .map((p) => ({
-        name: p.title.replace(/_/g, ' '),
-        profession: p.description ?? 'Notable figure',
-        wikiUrl: p.fullurl,
-        thumbnail: p.thumbnail?.source,
-      }))
+    return results
   } catch {
     return []
   }
