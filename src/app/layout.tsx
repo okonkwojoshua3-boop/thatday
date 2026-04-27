@@ -8,6 +8,22 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "ThatDay — Your Personal Time Capsule",
   description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
+  icons: {
+    icon: '/That Day.png',
+    apple: '/That Day.png',
+  },
+  openGraph: {
+    title: "ThatDay — Your Personal Time Capsule",
+    description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
+    images: [{ url: '/ThatDay Social Preview.png', width: 1200, height: 630 }],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "ThatDay — Your Personal Time Capsule",
+    description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
+    images: ['/ThatDay Social Preview.png'],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
