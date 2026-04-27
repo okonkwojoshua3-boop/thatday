@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
   icons: {
     icon: '/ThatDay Favicon.svg',
-    apple: '/ThatDay Favicon.svg',
+    apple: '/apple-touch-icon.png',
   },
   openGraph: {
     title: "ThatDay — Your Personal Time Capsule",
