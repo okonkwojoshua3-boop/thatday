@@ -300,3 +300,52 @@ html:not([data-splash]) .welcome-reveal {
     animation: splash-fade 160ms ease both;
   }
 }
+
+/* ── Loading · Rewinding (Figma 06) ────────────────── */
+
+.loading-enter {
+  animation: splash-fade 300ms var(--ease-out) both;
+}
+
+/* Spinner for the step in progress */
+.step-spin {
+  animation: step-spin 800ms linear infinite;
+}
+@keyframes step-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Each check lands with a tiny pop */
+.check-pop {
+  animation: splash-pop 260ms var(--ease-out) both;
+}
+
+.loading-swap {
+  display: inline-block;
+  animation: splash-rise 400ms var(--ease-out) both;
+}
+
+/* Gen Z stickers drift in, then bob gently */
+.sticker-drift {
+  animation:
+    sticker-in 500ms var(--ease-out) both,
+    sticker-bob 3200ms var(--ease-in-out) 600ms infinite alternate;
+}
+@keyframes sticker-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.8); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sticker-bob {
+  to { transform: translateY(-6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-spin {
+    animation: none;
+  }
+  .check-pop,
+  .loading-swap,
+  .sticker-drift {
+    animation: splash-fade 200ms ease both;
+  }
+}

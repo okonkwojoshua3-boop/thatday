@@ -60,8 +60,16 @@ export default function FlipBoard({
   )
 }
 
+const FLAP_SIZES = {
+  // Time Machine: 32×48 → 52×76 on desktop
+  picker: { box: 'h-12 w-8 rounded-[7px] md:h-[76px] md:w-[52px] md:rounded-[11px]', text: 'text-[28px] md:text-[44px]' },
+  // Loading: 32×48 → 48×72 on desktop
+  loading: { box: 'h-12 w-8 rounded-[7px] md:h-[72px] md:w-12 md:rounded-[10px]', text: 'text-[28px] md:text-[42px]' },
+}
+
 // One flap. When the character changes, the old top half falls away over the new one.
-function Flap({ ch }: { ch: string }) {
+export function Flap({ ch, size = 'picker' }: { ch: string; size?: keyof typeof FLAP_SIZES }) {
+  const { box, text } = FLAP_SIZES[size]
   const [shown, setShown] = useState(ch)
   const [prev, setPrev] = useState<string | null>(null)
   const [flip, setFlip] = useState(0)
@@ -74,9 +82,9 @@ function Flap({ ch }: { ch: string }) {
   }
 
   return (
-    <span className="relative block h-12 w-8 rounded-[7px] bg-card shadow-[0_3px_6px_rgba(0,0,0,0.10)] perspective-[300px] md:h-[76px] md:w-[52px] md:rounded-[11px]">
+    <span className={`relative block bg-card shadow-[0_3px_6px_rgba(0,0,0,0.10)] perspective-[300px] ${box}`}>
       <span className="absolute inset-x-0 bottom-0 h-1/2 rounded-b-[inherit] bg-canvas/70" />
-      <FlapChar ch={shown} />
+      <FlapChar ch={shown} className={text} />
       <span className="absolute inset-x-0 top-1/2 h-px bg-line" />
       {prev !== null && (
         <span
@@ -85,7 +93,7 @@ function Flap({ ch }: { ch: string }) {
           className="flap-fall absolute inset-x-0 top-0 h-1/2 overflow-hidden rounded-t-[inherit] bg-card"
         >
           <span className="absolute inset-x-0 top-0 h-[200%]">
-            <FlapChar ch={prev} />
+            <FlapChar ch={prev} className={text} />
           </span>
         </span>
       )}
@@ -93,9 +101,9 @@ function Flap({ ch }: { ch: string }) {
   )
 }
 
-function FlapChar({ ch }: { ch: string }) {
+function FlapChar({ ch, className }: { ch: string; className: string }) {
   return (
-    <span className="absolute inset-0 flex items-center justify-center text-[28px] font-semibold tracking-[-0.02em] text-ink tabular-nums md:text-[44px]">
+    <span className={`absolute inset-0 flex items-center justify-center font-semibold tracking-[-0.02em] text-ink tabular-nums ${className}`}>
       {ch}
     </span>
   )

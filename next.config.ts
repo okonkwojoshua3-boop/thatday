@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'thumb.wikimedia.org',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'is1-ssl.mzstatic.com',
         pathname: '/**',
       },
