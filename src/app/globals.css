@@ -206,3 +206,42 @@ html:not([data-splash]) .welcome-reveal {
     transform: none;
   }
 }
+
+/* ── Time Machine (Figma 03) ───────────────────────── */
+
+.tm-enter {
+  animation: tm-enter 400ms var(--ease-out) both;
+}
+@keyframes tm-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* The outgoing top half of a flap folds down over the new character */
+.flap-fall {
+  transform-origin: bottom;
+  backface-visibility: hidden;
+  animation: flap-fall 180ms var(--ease-in-out) both;
+}
+@keyframes flap-fall {
+  from { transform: rotateX(0deg); }
+  to   { transform: rotateX(-90deg); }
+}
+
+.teaser-in {
+  animation: teaser-in 300ms var(--ease-out) both;
+}
+@keyframes teaser-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-enter,
+  .teaser-in {
+    animation: splash-fade 200ms ease both;
+  }
+  .flap-fall {
+    display: none;
+  }
+}
