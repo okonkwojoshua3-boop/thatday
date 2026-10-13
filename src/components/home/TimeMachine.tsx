@@ -102,6 +102,11 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
   )
 
   // The dial and steppers drive whichever unit is active
+  // From 2000 the screen picks up the Gen Z sticker set (Figma 05 · Era style).
+  // Held back while Surprise me spins so stickers don't flicker on and off.
+  const genZ = !spinning && date.y >= 2000
+  const y2k = genZ && date.y === 2000
+
   const unit: DateUnit = precision === 'year' ? 'year' : precision === 'month' && active === 'day' ? 'month' : active
   const dialIndex = unit === 'year' ? date.y - MIN_YEAR : unit === 'month' ? date.m : date.d - 1
   const dialCount = unit === 'year' ? max.y - MIN_YEAR + 1 : unit === 'month' ? 12 : daysIn(date.y, date.m)
@@ -287,7 +292,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
   )
 
   return (
-    <main className="tm-enter flex min-h-svh flex-col bg-canvas px-6 pt-14 pb-10 text-ink md:px-16 md:pt-12 md:pb-16 short:pb-10">
+    <main className="tm-enter flex min-h-svh flex-col overflow-x-clip bg-canvas px-6 pt-14 pb-10 text-ink md:px-16 md:pt-12 md:pb-16 short:pb-10">
       {/* Top bar */}
       <div className="flex items-center justify-between">
         <button
@@ -314,7 +319,15 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      <div className="mx-auto mt-7 flex w-full max-w-[342px] flex-1 flex-col items-center md:mt-[102px] md:grid md:max-w-[1176px] md:flex-none md:grid-cols-[548px_1fr] md:items-start md:gap-x-9 short:mt-10">
+      <div className="relative mx-auto mt-7 flex w-full max-w-[342px] flex-1 flex-col items-center md:mt-[102px] md:grid md:max-w-[1176px] md:flex-none md:grid-cols-[548px_1fr] md:items-start md:gap-x-9 short:mt-10">
+        {genZ && (
+          <>
+            <EraStickers items={ERA_MOBILE} className="md:hidden" />
+            <EraStickers items={y2k ? ERA_DESKTOP.filter(s => s.src !== BUBBLE) : ERA_DESKTOP} className="hidden md:block" />
+            {y2k && <EraStickers items={[{ src: Y2K, x: 440, y: 520, w: 223.8, h: 69.8 }]} className="hidden md:block" />}
+          </>
+        )}
+
         {/* Left column: headline, precision, board, actions */}
         <div className="flex w-full flex-col items-center md:items-start">
           <h1 className="text-center font-serif text-[40px] leading-none tracking-[-0.01em] md:text-left md:text-[72px]">
@@ -382,13 +395,65 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
           }} />
         </div>
 
-        <Actions className="mt-auto pt-10 md:hidden" spinning={spinning} surprised={!!surprise} isPending={isPending} onSpin={spin} onOpen={open} />
+        <div className="relative mt-auto w-full pt-10 md:hidden">
+          {genZ && (
+            <EraStickers
+              items={[y2k ? { src: Y2K, x: 87.8, y: -13, w: 223.8, h: 69.8 } : { src: BUBBLE, x: 259.7, y: -32, w: 83, h: 70.2 }]}
+            />
+          )}
+          <Actions className="" spinning={spinning} surprised={!!surprise} isPending={isPending} onSpin={spin} onOpen={open} />
+        </div>
       </div>
 
       {sheetOpen && (
         <CountrySheet value={country} suggested={detected} onChange={chooseCountry} onClose={() => setSheetOpen(false)} />
       )}
     </main>
+  )
+}
+
+// Gen Z sticker set (Figma 05 · Era style, 2005 frames). Boxes are render bounds
+// (drop shadows included), relative to the content area: mobile from (24, 124),
+// desktop from the grid's top-left (160, 190) in the 1440 frame.
+const BUBBLE = '/era/bubble.png'
+const Y2K = '/era/y2k.png'
+type EraSticker = { src: string; x: number; y: number; w: number; h: number }
+
+const ERA_MOBILE: EraSticker[] = [
+  { src: '/era/sparkle-blue.png', x: 226.4, y: -17.6, w: 47.5, h: 47.5 },
+  { src: '/era/phone.png', x: 294, y: 8.7, w: 72, h: 88 },
+  { src: '/era/sparkle-pink.png', x: 4.3, y: 84.3, w: 41.5, h: 41.5 },
+  { src: '/era/cd.png', x: -48, y: 126, w: 72, h: 74.6 },
+  { src: '/era/smiley.png', x: 303.8, y: 468.2, w: 62.2, h: 67 },
+  { src: '/era/heart.png', x: -19.1, y: 494, w: 56.5, h: 56.2 },
+]
+
+const ERA_DESKTOP: EraSticker[] = [
+  { src: '/era/sparkle-blue.png', x: 388.5, y: -19.5, w: 58.9, h: 58.9 },
+  { src: '/era/phone.png', x: 440, y: -63.5, w: 116.4, h: 122.9 },
+  { src: '/era/sparkle-pink.png', x: 1008.4, y: 54.4, w: 49.2, h: 49.2 },
+  { src: '/era/heart.png', x: 1155.5, y: -10, w: 75.9, h: 78.3 },
+  { src: '/era/smiley.png', x: 1123.8, y: 360.3, w: 89.2, h: 90.1 },
+  { src: '/era/cd.png', x: -81.9, y: 330, w: 110.8, h: 114.8 },
+  { src: BUBBLE, x: 521.4, y: 510, w: 113.3, h: 99.4 },
+]
+
+/** Stickers pop in with a little bounce as the year crosses into 2000 */
+function EraStickers({ items, className = '' }: { items: EraSticker[]; className?: string }) {
+  return (
+    <div aria-hidden="true" className={`pointer-events-none absolute inset-0 ${className}`}>
+      {items.map((s, n) => (
+        <Image
+          key={s.src}
+          src={s.src}
+          alt=""
+          width={Math.ceil(s.w)}
+          height={Math.ceil(s.h)}
+          className="era-pop absolute max-w-none"
+          style={{ left: s.x, top: s.y, width: s.w, height: s.h, animationDelay: `${n * 50}ms` }}
+        />
+      ))}
+    </div>
   )
 }
 
