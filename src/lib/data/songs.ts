@@ -1087,3 +1087,10 @@ export async function getSongForYear(year: number, country = 'world', date?: str
   const media = await fetchTrackMedia(entry.title, entry.artist)
   return { title: entry.title, artist: entry.artist, chart, ...media }
 }
+
+/** The curated No.1 for a year, without any network lookups (for quick summaries) */
+export function getChartEntry(year: number, country = 'world'): { title: string; artist: string } | null {
+  const chartKey = CHART_DATA[country] !== undefined ? country : 'world'
+  const entry = CHART_DATA[chartKey][year] ?? closestYear(CHART_DATA[chartKey], year)
+  return entry ? { title: entry.title, artist: entry.artist } : null
+}

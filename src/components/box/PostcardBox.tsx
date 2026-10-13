@@ -354,6 +354,9 @@ function EmptyPostcard({ className, children }: { className: string; children?: 
 }
 
 function Empty() {
+  // Box is client-only, so this is the visitor's own date
+  const now = new Date()
+  const today = `${now.getDate()} ${now.toLocaleDateString('en-GB', { month: 'long' })}`
   return (
     <div className="flex flex-1 flex-col">
       <div className="relative mx-auto mt-[82px] h-[200px] w-[290px]" aria-hidden="true">
@@ -377,6 +380,9 @@ function Empty() {
         className="mt-auto flex h-14 items-center justify-center rounded-full bg-ink text-[16px] font-medium text-canvas transition-transform duration-150 ease-out active:scale-[0.97]"
       >
         Pick a day
+      </Link>
+      <Link href="/" className="mt-6 text-center text-[14px] leading-[18px] font-medium text-ink-secondary hover:text-ink">
+        or see what happened on {today}
       </Link>
     </div>
   )

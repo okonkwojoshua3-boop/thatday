@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('td-splash-seen')==='1')document.documentElement.dataset.splash='seen'}catch(e){}`,
+            __html: `try{if(localStorage.getItem('td-splash-seen')==='1'){var d=document.documentElement.dataset;d.splash='seen';d.returning='1'}}catch(e){}`,
           }}
         />
       </head>

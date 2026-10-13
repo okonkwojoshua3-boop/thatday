@@ -318,3 +318,59 @@ export function splitHeadline(text: string): { headline: string; deck?: string }
   const deck = parts.slice(2).join(': ')
   return { headline: parts[1], deck: deck.charAt(0).toUpperCase() + deck.slice(1) }
 }
+
+/**
+ * Up to `count` events on this calendar day since 1950, one per decade and
+ * spread across the decades, for the returning-visitor "On this day" home.
+ */
+export async function getDayHighlights(
+  month: number,
+  day: number,
+  country = 'world',
+  count = 5,
+): Promise<{ year: number; headline: string }[]> {
+  try {
+    const lang = COUNTRY_LANG[country] ?? 'en'
+    // "all" includes Wikipedia's curated "selected" events, which make better headlines
+    const res = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/feed/onthisday/all/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`, {
+      headers: { 'User-Agent': 'ThatDay/1.0 (time-capsule app)' },
+      next: { revalidate: 86400 },
+    })
+    if (!res.ok) return []
+    const data: WikiResponse & { selected?: WikiEvent[] } = await res.json()
+    const thisYear = new Date().getFullYear()
+    const selected = new Set((data.selected ?? []).map(e => e.text))
+    const seen = new Set<string>()
+    let events = [...(data.selected ?? []), ...(data.events ?? [])].filter(
+      e => e.text && e.year >= 1950 && e.year < thisYear && !seen.has(e.text) && seen.add(e.text),
+    )
+
+    const keywords = country !== 'world' ? (COUNTRY_KEYWORDS[country] ?? []) : []
+    if (keywords.length) {
+      const local = events.filter(e => matchesCountry(e.text, keywords))
+      if (local.length >= 3) events = local
+    }
+
+    const headlineOf = (e: WikiEvent) =>
+      splitHeadline(firstSentence(e.text).replace(/\s*\((?:pictured|shown|illustrated)[^)]*\)/g, '')).headline.replace(/\.$/, '')
+
+    // Best event per decade: curated, well linked, and short enough for a headline
+    const score = (e: WikiEvent) =>
+      (selected.has(e.text) ? 6 : 0) + (e.pages?.length ?? 0) * 2 + (e.pages?.some(p => p.thumbnail) ? 1 : 0) - headlineOf(e).length / 40
+    const byDecade = new Map<number, WikiEvent>()
+    for (const e of events) {
+      const decade = Math.floor(e.year / 10) * 10
+      const current = byDecade.get(decade)
+      if (!current || score(e) > score(current)) byDecade.set(decade, e)
+    }
+
+    // Keep the strongest decades, then show them in order
+    return [...byDecade.values()]
+      .sort((a, b) => score(b) - score(a))
+      .slice(0, count)
+      .sort((a, b) => a.year - b.year)
+      .map(e => ({ year: e.year, headline: headlineOf(e) }))
+  } catch {
+    return []
+  }
+}

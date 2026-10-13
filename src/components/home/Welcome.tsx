@@ -42,7 +42,7 @@ export default function Welcome({ onStart }: { onStart: () => void }) {
   }, [onStart])
 
   return (
-    <main className="flex min-h-svh flex-col items-center bg-canvas px-6 pt-[60px] pb-10 text-ink md:justify-center md:py-16 short:py-8">
+    <main className="welcome-screen flex min-h-svh flex-col items-center bg-canvas px-6 pt-[60px] pb-10 text-ink md:justify-center md:py-16 short:py-8">
       <div className="flex w-full max-w-[342px] flex-col items-center gap-6 md:max-w-[640px] md:gap-8 short:gap-6">
         {/* Counter pill */}
         <p
