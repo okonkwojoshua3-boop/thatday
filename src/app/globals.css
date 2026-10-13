@@ -1,15 +1,55 @@
 @import "tailwindcss";
 
+/* Desktop windows shorter than the 900px Figma frame */
+@custom-variant short (@media (min-width: 48rem) and (max-height: 880px));
+
 :root {
   --background: #fafaf9;
   --foreground: #111111;
 }
 
+/* Redesign tokens (Figma "ThatDay Color"). Dark follows the device setting. */
+:root {
+  --td-canvas: #fbf8f2;
+  --td-board: #ffffff;
+  --td-ink: #18181b;
+  --td-ink-secondary: #71717a;
+  --td-ink-muted: #a1a1aa;
+  --td-card: #ffffff;
+  --td-border: #ece6dc;
+  --td-green: #22c55e;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --td-canvas: #12110f;
+    --td-board: #0a0a09;
+    --td-ink: #f3efe7;
+    --td-ink-secondary: #a8a29e;
+    --td-ink-muted: #6e6a64;
+    --td-card: #1c1a18;
+    --td-border: #2b2926;
+    --td-green: #4ade80;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-canvas: var(--td-canvas);
+  --color-board: var(--td-board);
+  --color-ink: var(--td-ink);
+  --color-ink-secondary: var(--td-ink-secondary);
+  --color-ink-muted: var(--td-ink-muted);
+  --color-card: var(--td-card);
+  --color-line: var(--td-border);
+  --color-era-green: var(--td-green);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-instrument-serif);
 }
 
 html {
@@ -37,4 +77,542 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #e4e4e7;
   border-radius: 99px;
+}
+
+/* ── Splash (Figma 01 — logo draws itself) ────────── */
+
+/* Set by the inline script in layout.tsx so returning visitors never see a flash */
+html[data-splash="seen"] .splash {
+  display: none;
+}
+
+.splash {
+  transition: opacity 400ms var(--ease-out);
+}
+.splash-content {
+  transition: transform 400ms var(--ease-out);
+}
+.splash[data-leaving] {
+  opacity: 0;
+  pointer-events: none;
+}
+.splash[data-leaving] .splash-content {
+  transform: translateY(-8px);
+}
+
+/* 1. Ring traces clockwise from 12 o'clock */
+.splash-ring {
+  stroke-dasharray: 1;
+  animation: splash-draw 550ms var(--ease-in-out) 150ms both;
+}
+
+/* 2. Ticks pop in, 40ms apart (delays set inline) */
+.splash-tick {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: splash-pop 220ms var(--ease-out) both;
+}
+
+/* 3. Hands drop in at the centre and sweep backwards: the rewind */
+.splash-hand-minute,
+.splash-hand-hour,
+.splash-hub {
+  transform-origin: 44px 44px;
+}
+.splash-hand-minute {
+  animation: splash-rewind-minute 600ms var(--ease-in-out) 850ms both;
+}
+.splash-hand-hour {
+  animation: splash-rewind-hour 600ms var(--ease-in-out) 850ms both;
+}
+.splash-hub {
+  animation: splash-pop 220ms var(--ease-out) 850ms both;
+}
+
+/* 4. Wordmark fades up beneath */
+.splash-wordmark {
+  animation: splash-rise 350ms var(--ease-out) 1450ms both;
+}
+
+@keyframes splash-draw {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  1%   { opacity: 1; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes splash-pop {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes splash-rewind-minute {
+  from { opacity: 0; transform: rotate(540deg) scale(0.6); }
+  20%  { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes splash-rewind-hour {
+  from { opacity: 0; transform: rotate(120deg) scale(0.6); }
+  20%  { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes splash-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes splash-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Reduced motion: no drawing or sweeping, the logo and wordmark simply fade in */
+@media (prefers-reduced-motion: reduce) {
+  .splash-ring,
+  .splash-tick,
+  .splash-hand-minute,
+  .splash-hand-hour,
+  .splash-hub {
+    animation: splash-fade 300ms ease both;
+  }
+  .splash-ring {
+    stroke-dashoffset: 0;
+  }
+  .splash-wordmark {
+    animation: splash-fade 300ms ease 200ms both;
+  }
+  .splash[data-leaving] .splash-content {
+    transform: none;
+  }
+}
+
+/* ── Welcome (Figma 02) ────────────────────────────── */
+
+/* Held back while the splash is up; fades up in a stagger as it leaves.
+   Returning visitors get data-splash="seen" before paint, so no motion. */
+.welcome-reveal {
+  transition:
+    opacity 500ms var(--ease-out),
+    transform 500ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 50ms);
+}
+html:not([data-splash]) .welcome-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-reveal {
+    transition: opacity 300ms ease;
+    transition-delay: 0ms;
+  }
+  html:not([data-splash]) .welcome-reveal {
+    transform: none;
+  }
+}
+
+/* ── Time Machine (Figma 03) ───────────────────────── */
+
+.tm-enter {
+  animation: tm-enter 400ms var(--ease-out) both;
+}
+@keyframes tm-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* The outgoing top half of a flap folds down over the new character */
+.flap-fall {
+  transform-origin: bottom;
+  backface-visibility: hidden;
+  animation: flap-fall 180ms var(--ease-in-out) both;
+}
+@keyframes flap-fall {
+  from { transform: rotateX(0deg); }
+  to   { transform: rotateX(-90deg); }
+}
+
+.teaser-in {
+  animation: teaser-in 300ms var(--ease-out) both;
+}
+@keyframes teaser-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-enter,
+  .teaser-in {
+    animation: splash-fade 200ms ease both;
+  }
+  .flap-fall {
+    display: none;
+  }
+}
+
+/* ── Country sheet (Figma 04) ──────────────────────── */
+
+.sheet-scrim {
+  animation: splash-fade 240ms var(--ease-out) both;
+}
+.sheet-panel {
+  transition: transform 240ms var(--ease-out);
+  animation: sheet-up 380ms cubic-bezier(0.32, 0.72, 0, 1) backwards;
+}
+[data-closing] .sheet-scrim {
+  opacity: 0;
+  transition: opacity 240ms var(--ease-out);
+}
+[data-closing] .sheet-panel {
+  animation: sheet-down 240ms var(--ease-in-out) both;
+}
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: none; }
+}
+@keyframes sheet-down {
+  to { transform: translateY(100%); }
+}
+
+/* Desktop: a panel that drops from the pill */
+@media (min-width: 48rem) {
+  .sheet-panel {
+    transform-origin: top right;
+    animation: sheet-pop 220ms var(--ease-out) backwards;
+  }
+  [data-closing] .sheet-panel {
+    animation: sheet-unpop 160ms var(--ease-out) both;
+  }
+}
+@keyframes sheet-pop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sheet-unpop {
+  to { opacity: 0; transform: translateY(-6px) scale(0.97); }
+}
+
+/* New flag pops into the pill */
+.pill-flag {
+  animation: splash-pop 260ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-panel,
+  [data-closing] .sheet-panel,
+  .pill-flag {
+    animation: splash-fade 160ms ease both;
+  }
+}
+
+/* ── Loading · Rewinding (Figma 06) ────────────────── */
+
+.loading-enter {
+  animation: splash-fade 300ms var(--ease-out) both;
+}
+
+/* Spinner for the step in progress */
+.step-spin {
+  animation: step-spin 800ms linear infinite;
+}
+@keyframes step-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Each check lands with a tiny pop */
+.check-pop {
+  animation: splash-pop 260ms var(--ease-out) both;
+}
+
+.loading-swap {
+  display: inline-block;
+  animation: splash-rise 400ms var(--ease-out) both;
+}
+
+/* Gen Z stickers drift in, then bob gently */
+.sticker-drift {
+  animation:
+    sticker-in 500ms var(--ease-out) both,
+    sticker-bob 3200ms var(--ease-in-out) 600ms infinite alternate;
+}
+@keyframes sticker-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.8); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sticker-bob {
+  to { transform: translateY(-6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-spin {
+    animation: none;
+  }
+  .check-pop,
+  .loading-swap,
+  .sticker-drift {
+    animation: splash-fade 200ms ease both;
+  }
+}
+
+/* ── Results · envelope reveal (Figma 12, motion notes) ── */
+
+.envelope-scene .env-header,
+.envelope-scene .env-body {
+  transition: transform 420ms var(--ease-out);
+}
+.envelope-scene .env-body {
+  animation: env-drop 320ms var(--ease-out) backwards;
+}
+@keyframes env-drop {
+  from { opacity: 0; transform: translateY(-24px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+.env-tap {
+  animation: env-pulse 1400ms var(--ease-in-out) infinite;
+}
+@keyframes env-pulse {
+  50% { transform: scale(1.12); }
+}
+
+/* Sealed */
+.env-flap { transform: rotateX(-90deg); }
+.env-postcard { transform: translateY(138px) rotate(3deg); }
+.env-sides { opacity: 0; }
+.env-closed-flap,
+.env-seal,
+.env-face,
+.env-sides,
+.env-flap,
+.env-postcard {
+  transition-property: transform, opacity;
+  transition-timing-function: var(--ease-in-out);
+}
+
+/* Opening: seal (160ms) → flap folds up (320ms) → postcard slides out (420ms) */
+[data-phase="opening"] .env-header,
+[data-phase="open"] .env-header { transform: translateY(-60px); }
+[data-phase="opening"] .env-body,
+[data-phase="open"] .env-body { transform: translateY(124px); }
+
+[data-phase="opening"] .env-seal,
+[data-phase="open"] .env-seal {
+  opacity: 0;
+  transform: scale(1.2);
+  transition-duration: 160ms;
+}
+[data-phase="opening"] .env-closed-flap,
+[data-phase="open"] .env-closed-flap {
+  transform: rotateX(90deg);
+  opacity: 0;
+  transition-duration: 160ms;
+  transition-delay: 160ms;
+}
+[data-phase="opening"] .env-flap,
+[data-phase="open"] .env-flap {
+  transform: none;
+  transition-duration: 160ms;
+  transition-delay: 320ms;
+}
+[data-phase="opening"] .env-face,
+[data-phase="open"] .env-face {
+  opacity: 0;
+  transition-duration: 200ms;
+}
+[data-phase="opening"] .env-sides,
+[data-phase="open"] .env-sides {
+  opacity: 1;
+  transition-duration: 200ms;
+  transition-delay: 200ms;
+}
+[data-phase="opening"] .env-postcard,
+[data-phase="open"] .env-postcard {
+  transform: rotate(3deg);
+  transition-duration: 420ms;
+  transition-delay: 200ms;
+  transition-timing-function: var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .envelope-scene .env-body,
+  .env-tap {
+    animation: splash-fade 200ms ease both;
+  }
+}
+
+/* ── Results · story cards (Figma 12) ──────────────── */
+
+.story-enter {
+  animation: splash-fade 360ms var(--ease-out) both;
+}
+
+/* Progress bar for the current card; runs for --card-ms then advances */
+.story-bar {
+  animation-name: story-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+@keyframes story-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Card content enters in a 50ms stagger (--i) */
+.story-in {
+  animation: story-in 420ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+@keyframes story-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Keepsakes drop in with their tilt (uses the `rotate` property, so transform is free) */
+.story-drop {
+  animation: story-drop 520ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+@keyframes story-drop {
+  from { opacity: 0; transform: translateY(-16px) scale(1.03); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Stamps land last with a little thud */
+.story-stamp {
+  animation: story-thud 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(400ms + var(--i, 0) * 50ms);
+}
+@keyframes story-thud {
+  from { opacity: 0; transform: scale(1.5); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Tape sticks on one piece at a time */
+.story-tape {
+  animation: story-tape 260ms var(--ease-out) both;
+  animation-delay: calc(300ms + var(--i, 0) * 90ms);
+}
+@keyframes story-tape {
+  from { opacity: 0; transform: scale(1.25); }
+  to   { opacity: 1; transform: none; }
+}
+
+.clip-swap {
+  animation: splash-fade 240ms var(--ease-out) both;
+}
+
+.dot-pop {
+  animation: splash-pop 240ms var(--ease-out) both;
+}
+
+.ticket-in {
+  animation: ticket-in 420ms var(--ease-out) both;
+}
+@keyframes ticket-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Stamps press in, then the cancel mark lands */
+.stamp-press {
+  display: block;
+  animation: story-thud 340ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.stamp-cancel {
+  animation: splash-pop 220ms var(--ease-out) 900ms both;
+}
+
+.toast-in {
+  animation: splash-rise 260ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-in,
+  .story-drop,
+  .story-stamp,
+  .story-tape,
+  .dot-pop,
+  .ticket-in,
+  .stamp-press,
+  .stamp-cancel {
+    animation: splash-fade 200ms ease both;
+  }
+}
+
+/* ── Postcard box (Figma 14) ───────────────────────── */
+
+/* Wallet stack settles in from below */
+.stack-card {
+  animation: story-in 420ms var(--ease-out) both;
+}
+
+/* Tapped card lifts to the top: spring, ~0.4s, small bounce */
+.card-lift {
+  animation: card-lift 420ms cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+@keyframes card-lift {
+  from { opacity: 0.6; transform: translateY(120px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Just-saved postcard drops onto the pile */
+.pile-drop {
+  animation: pile-drop 520ms cubic-bezier(0.34, 1.3, 0.64, 1) 150ms both;
+}
+@keyframes pile-drop {
+  from { opacity: 0; transform: translateY(-120px) rotate(-6deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Count ticks up */
+.badge-tick {
+  display: inline-block;
+  animation: splash-pop 300ms var(--ease-out) 500ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-card,
+  .card-lift,
+  .pile-drop,
+  .badge-tick {
+    animation: splash-fade 200ms ease both;
+  }
+}
+
+/* ── On this day (Figma 13) ────────────────────────── */
+
+/* The dial face turns like a clock between years */
+.dial-face {
+  transform-origin: 140px 140px;
+  transition: transform 320ms var(--ease-in-out);
+}
+
+/* Year slides across in the swipe direction */
+.year-in-right { animation: year-in-right 320ms var(--ease-out) both; }
+.year-in-left  { animation: year-in-left 320ms var(--ease-out) both; }
+@keyframes year-in-right {
+  from { opacity: 0; transform: translateX(48px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes year-in-left {
+  from { opacity: 0; transform: translateX(-48px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* New polaroids land with a 40ms stagger (delay set inline); tilt uses `rotate` */
+.polaroid-land {
+  animation: polaroid-land 380ms cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+@keyframes polaroid-land {
+  from { opacity: 0; transform: translateY(-14px) scale(1.06); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Returning visitors skip the welcome: hide it until On this day mounts */
+html[data-returning] .welcome-screen {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dial-face { transition: none; }
+  .year-in-right,
+  .year-in-left,
+  .polaroid-land {
+    animation: splash-fade 200ms ease both;
+  }
 }
