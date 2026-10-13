@@ -3,6 +3,8 @@ export interface Song {
   artist: string
   chart: string
   albumArt?: string
+  /** 30-second iTunes preview */
+  previewUrl?: string
   url?: string
 }
 

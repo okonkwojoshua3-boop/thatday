@@ -973,10 +973,10 @@ function closestYear(map: Record<number, SongEntry>, year: number): SongEntry | 
 
 const MIX_KEYWORDS = ['mix', 'dj ', 'playlist', 'compilation', 'various', 'karaoke', 'tribute', 'cover version']
 
-function pickBestItunesResult(
-  results: Array<{ artworkUrl100?: string; collectionName?: string; artistName?: string }>,
-  preferredArtist: string,
-): string | undefined {
+type ItunesResult = { artworkUrl100?: string; previewUrl?: string; collectionName?: string; artistName?: string }
+type TrackMedia = { albumArt?: string; previewUrl?: string }
+
+function pickBestItunesResult(results: ItunesResult[], preferredArtist: string): TrackMedia | undefined {
   if (!results.length) return undefined
   const preferred = preferredArtist.toLowerCase()
 
@@ -994,10 +994,11 @@ function pickBestItunesResult(
     }) ??
     results[0]
 
-  return best?.artworkUrl100
+  if (!best?.artworkUrl100) return undefined
+  return { albumArt: best.artworkUrl100.replace('100x100bb', '600x600bb'), previewUrl: best.previewUrl }
 }
 
-async function fetchAlbumArt(title: string, artist: string): Promise<string | undefined> {
+async function fetchTrackMedia(title: string, artist: string): Promise<TrackMedia> {
   // Strategy 1: iTunes full query — prefer original release over DJ mixes/compilations
   try {
     const q = encodeURIComponent(`${title} ${artist}`)
@@ -1007,8 +1008,8 @@ async function fetchAlbumArt(title: string, artist: string): Promise<string | un
     )
     if (res.ok) {
       const data = await res.json()
-      const url = pickBestItunesResult(data.results ?? [], artist)
-      if (url) return url.replace('100x100bb', '600x600bb')
+      const media = pickBestItunesResult(data.results ?? [], artist)
+      if (media) return media
     }
   } catch {}
 
@@ -1021,8 +1022,8 @@ async function fetchAlbumArt(title: string, artist: string): Promise<string | un
     )
     if (res.ok) {
       const data = await res.json()
-      const url = pickBestItunesResult(data.results ?? [], artist)
-      if (url) return url.replace('100x100bb', '600x600bb')
+      const media = pickBestItunesResult(data.results ?? [], artist)
+      if (media) return media
     }
   } catch {}
 
@@ -1040,12 +1041,12 @@ async function fetchAlbumArt(title: string, artist: string): Promise<string | un
         const img = images.find(i => i.size === 'extralarge') ?? images.find(i => i.size === 'large')
         const url = img?.['#text']
         // Last.fm returns a transparent placeholder for missing art — skip it
-        if (url && !url.includes('2a96cbd8b46e442fc41c2b86b821562f')) return url
+        if (url && !url.includes('2a96cbd8b46e442fc41c2b86b821562f')) return { albumArt: url }
       }
     } catch {}
   }
 
-  return undefined
+  return {}
 }
 
 export async function getSongForYear(year: number, country = 'world', date?: string): Promise<Song | null> {
@@ -1070,8 +1071,8 @@ export async function getSongForYear(year: number, country = 'world', date?: str
     }
 
     if (liveEntry) {
-      const albumArt = await fetchAlbumArt(liveEntry.title, liveEntry.artist)
-      return { title: liveEntry.title, artist: liveEntry.artist, chart: liveChart, albumArt }
+      const media = await fetchTrackMedia(liveEntry.title, liveEntry.artist)
+      return { title: liveEntry.title, artist: liveEntry.artist, chart: liveChart, ...media }
     }
   }
 
@@ -1083,6 +1084,6 @@ export async function getSongForYear(year: number, country = 'world', date?: str
   const entry = data[year] ?? closestYear(data, year)
   if (!entry) return null
 
-  const albumArt = await fetchAlbumArt(entry.title, entry.artist)
-  return { title: entry.title, artist: entry.artist, chart, albumArt }
+  const media = await fetchTrackMedia(entry.title, entry.artist)
+  return { title: entry.title, artist: entry.artist, chart, ...media }
 }

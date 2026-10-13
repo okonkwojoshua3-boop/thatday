@@ -393,3 +393,60 @@ export function getCostsForYear(year: number, country = 'world'): CostsWithMeta 
   const { symbol, code } = CURRENCY_META[country] ?? { symbol: '$', code: 'USD' }
   return { costs: interpolate(map, year), items, currencySymbol: symbol, currencyCode: code }
 }
+
+// ── US first-class postage (cents), by the year each rate took effect ────────
+const US_POSTAGE: [number, number][] = [
+  [1932, 3], [1958, 4], [1963, 5], [1968, 6], [1971, 8], [1974, 10], [1975, 13],
+  [1978, 15], [1981, 20], [1985, 22], [1988, 25], [1991, 29], [1995, 32], [1999, 33],
+  [2001, 34], [2002, 37], [2006, 39], [2007, 41], [2008, 42], [2009, 44], [2012, 45],
+  [2013, 46], [2014, 49], [2016, 47], [2017, 49], [2018, 50], [2019, 55], [2021, 58],
+  [2022, 60], [2023, 66], [2024, 73], [2025, 78],
+]
+
+/** US first-class stamp price in cents for a year */
+export function usPostageCents(year: number): number {
+  let cents = US_POSTAGE[0][1]
+  for (const [from, c] of US_POSTAGE) if (year >= from) cents = c
+  return cents
+}
+
+export interface PriceComparison {
+  key: string
+  label: string
+  then: number
+  now: number
+  /** Postage is shown in cents (25¢) rather than dollars */
+  cents?: boolean
+}
+
+/** Up to four everyday prices, then and now, for the Results ticket stubs */
+export function getThenVsNow(
+  year: number,
+  country = 'world',
+): { items: PriceComparison[]; currencySymbol: string; local: boolean } {
+  const thisYear = new Date().getFullYear()
+  const then = getCostsForYear(year, country)
+  const now = getCostsForYear(thisYear, country)
+  const local = country !== 'world' && country !== 'us'
+
+  const pick = (key: string, label?: string): PriceComparison | null => {
+    const item = then.items.find(i => i.key === key)
+    const a = then.costs[key]
+    const b = now.costs[key]
+    if (!item || a == null || b == null) return null
+    return { key, label: label ?? item.label, then: a, now: b }
+  }
+
+  let items: PriceComparison[]
+  if (!local) {
+    items = [
+      pick('gas'),
+      { key: 'postage', label: 'Postage stamp', then: usPostageCents(year), now: usPostageCents(thisYear), cents: true },
+      pick('movieTicket', 'Cinema ticket'),
+      pick('bread'),
+    ].filter((i): i is PriceComparison => i !== null)
+  } else {
+    items = then.items.map(i => pick(i.key)).filter((i): i is PriceComparison => i !== null).slice(0, 4)
+  }
+  return { items, currencySymbol: then.currencySymbol, local }
+}
