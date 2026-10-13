@@ -5,6 +5,8 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { COUNTRY_KEY, detectCountry, getCountry, isCountryCode, type CountryCode } from '@/lib/countries'
 import CountrySheet, { Flag } from './CountrySheet'
+import { BoxBadge } from '@/components/box/PostcardCard'
+import { usePostcards } from '@/lib/postcards'
 import FlipBoard, { type BoardGroup, type DateUnit } from './FlipBoard'
 import RingDial from './RingDial'
 
@@ -82,6 +84,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
   const selectedCountry = getCountry(country)
   const [detected] = useState(detectCountry)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const { saved } = usePostcards()
 
   function chooseCountry(code: CountryCode) {
     setCountry(code)
@@ -295,17 +298,20 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
         >
           <Arrow className="size-5 rotate-180" />
         </button>
-        <button
-          type="button"
-          onClick={() => setSheetOpen(true)}
-          aria-haspopup="dialog"
-          aria-label={`Whose history: ${selectedCountry.name}`}
-          className="flex h-10 items-center gap-2 rounded-full border border-line bg-card pr-3 pl-2 shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-transform duration-150 ease-out active:scale-[0.97]"
-        >
-          <Flag key={country} code={country} className="pill-flag size-[22px]" />
-          <span className="text-[14px] font-medium">{selectedCountry.name}</span>
-          <MaskIcon src="/icons/ui/chevron-down.svg" className="size-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {saved.length > 0 && <BoxBadge count={saved.length} className="h-10" />}
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            aria-haspopup="dialog"
+            aria-label={`Whose history: ${selectedCountry.name}`}
+            className="flex h-10 items-center gap-2 rounded-full border border-line bg-card pr-3 pl-2 shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-transform duration-150 ease-out active:scale-[0.97]"
+          >
+            <Flag key={country} code={country} className="pill-flag size-[22px]" />
+            <span className="text-[14px] font-medium">{selectedCountry.name}</span>
+            <MaskIcon src="/icons/ui/chevron-down.svg" className="size-4" />
+          </button>
+        </div>
       </div>
 
       <div className="mx-auto mt-7 flex w-full max-w-[342px] flex-1 flex-col items-center md:mt-[102px] md:grid md:max-w-[1176px] md:flex-none md:grid-cols-[548px_1fr] md:items-start md:gap-x-9 short:mt-10">

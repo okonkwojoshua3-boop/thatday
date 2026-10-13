@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { Brand, CloseIcon } from './art'
 import { FrontPageCard, PassportCard, PricesCard, SongCard, StampsCard, YearsCard } from './cards'
 import Envelope from './Envelope'
-import { SAVED_KEY, SHARED_KEY, useStoredList } from './storage'
+import { SHARED_KEY, usePostcards, useStored, type Postcard } from '@/lib/postcards'
+import { stampsFor } from './cards'
+import SavedMoment from './SavedMoment'
 import type { StoryData } from './types'
 
 // Figma 12 — Results · Postcard story. Envelope first, then a Spotify-style
@@ -24,11 +26,29 @@ export default function PostcardStory({ data }: { data: StoryData }) {
   const [playing, setPlaying] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
-  const [shared, addShared] = useStoredList(SHARED_KEY)
-  const [saved, addSaved] = useStoredList(SAVED_KEY)
+  const [shared, setShared] = useStored<string>(SHARED_KEY)
+  const { saved, save: savePostcard, markOpened } = usePostcards()
+  const [savedMoment, setSavedMoment] = useState(false)
   const isShared = shared.includes(data.date)
   const postcardKey = `${data.date}|${data.country}`
-  const isSaved = saved.includes(postcardKey)
+  const isSaved = saved.some(p => p.key === postcardKey)
+
+  const snapshot = useCallback(
+    (): Postcard => ({
+      key: postcardKey,
+      date: data.date,
+      country: data.country,
+      countryName: data.countryName,
+      headline: data.front?.headline ?? null,
+      song: data.song?.title ?? null,
+      photo: data.front?.photo ?? null,
+      genZ: data.genZ,
+      stamps: Object.values(stampsFor(data, shared.includes(data.date))).filter(Boolean).length,
+      stampValue: data.stampValue,
+      cardId: data.cardId,
+    }),
+    [data, postcardKey, shared],
+  )
 
   const last = CARDS.length - 1
   const card = CARDS[index]
@@ -37,7 +57,10 @@ export default function PostcardStory({ data }: { data: StoryData }) {
   const next = useCallback(() => setIndex(n => Math.min(last, n + 1)), [last])
   const prev = useCallback(() => setIndex(n => Math.max(0, n - 1)), [])
   const pickAnother = useCallback(() => router.push('/?pick=1'), [router])
-  const read = useCallback(() => setOpened(true), [])
+  const read = useCallback(() => {
+    setOpened(true)
+    markOpened(snapshot())
+  }, [markOpened, snapshot])
 
   function flash(message: string) {
     setToast(message)
@@ -55,7 +78,7 @@ export default function PostcardStory({ data }: { data: StoryData }) {
         flash('Link copied')
       }
       if (!isShared) flash('Last stamp collected')
-      addShared(data.date)
+      setShared(prev => (prev.includes(data.date) ? prev : [...prev, data.date]))
     } catch (e) {
       // Closing the share sheet isn't an error worth showing
       if ((e as Error)?.name !== 'AbortError') flash('Couldn’t share that, try again')
@@ -63,9 +86,8 @@ export default function PostcardStory({ data }: { data: StoryData }) {
   }
 
   function save() {
-    if (isSaved) return
-    addSaved(postcardKey)
-    flash('Into the box it goes')
+    if (!isSaved) savePostcard(snapshot())
+    setSavedMoment(true)
   }
 
   // Tap zones and hold-to-pause
@@ -110,6 +132,15 @@ export default function PostcardStory({ data }: { data: StoryData }) {
   }, [opened, next, prev, pickAnother])
 
   if (!opened) return <Envelope data={data} onRead={read} />
+  if (savedMoment) {
+    return (
+      <SavedMoment
+        current={postcardKey}
+        onViewBox={() => router.push('/box')}
+        onKeepGoing={() => setSavedMoment(false)}
+      />
+    )
+  }
 
   return (
     <main

@@ -309,3 +309,12 @@ export async function getFrontPage(
     return null
   }
 }
+
+// Wikipedia events often read "Cold War: Fall of the Berlin Wall: East Germany opens…".
+// Use the middle part as a newspaper headline and the rest as the deck.
+export function splitHeadline(text: string): { headline: string; deck?: string } {
+  const parts = text.split(': ')
+  if (parts.length < 3) return { headline: text }
+  const deck = parts.slice(2).join(': ')
+  return { headline: parts[1], deck: deck.charAt(0).toUpperCase() + deck.slice(1) }
+}

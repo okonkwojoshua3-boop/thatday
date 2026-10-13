@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { notFound, redirect } from 'next/navigation'
 import { isValidDate, getDateParts, formatDisplayDate, getMinDate, getMaxDate } from '@/lib/utils/date'
-import { getFrontPage } from '@/lib/data/events'
+import { getFrontPage, splitHeadline } from '@/lib/data/events'
 import { getPeopleForDate } from '@/lib/data/people'
 import { getSongForYear } from '@/lib/data/songs'
 import { getThenVsNow, usPostageCents } from '@/lib/data/costs'
@@ -12,15 +12,6 @@ import PostcardStory from '@/components/results/PostcardStory'
 import type { StoryData } from '@/components/results/types'
 
 const DAY_MS = 86_400_000
-
-// Wikipedia events often read "Cold War: Fall of the Berlin Wall: East Germany opens…".
-// Use the middle part as a newspaper headline and the rest as the deck.
-function splitHeadline(text: string): { headline: string; deck?: string } {
-  const parts = text.split(': ')
-  if (parts.length < 3) return { headline: text }
-  const deck = parts.slice(2).join(': ')
-  return { headline: parts[1], deck: deck.charAt(0).toUpperCase() + deck.slice(1) }
-}
 
 // Whole years, months and days from `from` to `to`
 function elapsed(from: Date, to: Date) {
