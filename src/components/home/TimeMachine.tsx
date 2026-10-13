@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { COUNTRIES, COUNTRY_KEY, isCountryCode, type CountryCode } from '@/lib/countries'
+import { COUNTRY_KEY, detectCountry, getCountry, isCountryCode, type CountryCode } from '@/lib/countries'
+import CountrySheet, { Flag } from './CountrySheet'
 import FlipBoard, { type BoardGroup, type DateUnit } from './FlipBoard'
 import RingDial from './RingDial'
 
@@ -78,10 +79,11 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
     } catch {}
     return 'world'
   })
-  const selectedCountry = COUNTRIES.find(c => c.code === country) ?? COUNTRIES[0]
+  const selectedCountry = getCountry(country)
+  const [detected] = useState(detectCountry)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
-  function chooseCountry(code: string) {
-    if (!isCountryCode(code)) return
+  function chooseCountry(code: CountryCode) {
     setCountry(code)
     try {
       localStorage.setItem(COUNTRY_KEY, code)
@@ -166,7 +168,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
     function onKey(e: KeyboardEvent) {
       if (e.metaKey || e.ctrlKey || e.altKey || (e.repeat && e.key === 'Enter')) return
       const target = e.target instanceof HTMLElement ? e.target : null
-      if (target?.closest('input, textarea, select, [role="slider"]')) return
+      if (target?.closest('input, textarea, select, [role="slider"], [role="dialog"]')) return
 
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault()
@@ -293,26 +295,17 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
         >
           <Arrow className="size-5 rotate-180" />
         </button>
-        {/* Native select for now; Figma 04 (country sheet) replaces it */}
-        <label className="relative flex h-10 items-center gap-2 rounded-full border border-line bg-card pr-3 pl-2 shadow-[0_2px_4px_rgba(0,0,0,0.06)] focus-within:ring-2 focus-within:ring-ink/20">
-          <span aria-hidden="true" className="flex size-[22px] items-center justify-center overflow-hidden rounded-full text-[16px] leading-none">
-            {selectedCountry.flag}
-          </span>
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          aria-haspopup="dialog"
+          aria-label={`Whose history: ${selectedCountry.name}`}
+          className="flex h-10 items-center gap-2 rounded-full border border-line bg-card pr-3 pl-2 shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-transform duration-150 ease-out active:scale-[0.97]"
+        >
+          <Flag key={country} code={country} className="pill-flag size-[22px]" />
           <span className="text-[14px] font-medium">{selectedCountry.name}</span>
           <MaskIcon src="/icons/ui/chevron-down.svg" className="size-4" />
-          <select
-            value={country}
-            onChange={e => chooseCountry(e.target.value)}
-            aria-label="Whose history?"
-            className="absolute inset-0 cursor-pointer opacity-0"
-          >
-            {COUNTRIES.map(c => (
-              <option key={c.code} value={c.code}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        </button>
       </div>
 
       <div className="mx-auto mt-7 flex w-full max-w-[342px] flex-1 flex-col items-center md:mt-[102px] md:grid md:max-w-[1176px] md:flex-none md:grid-cols-[548px_1fr] md:items-start md:gap-x-9 short:mt-10">
@@ -385,6 +378,10 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
 
         <Actions className="mt-auto pt-10 md:hidden" spinning={spinning} surprised={!!surprise} isPending={isPending} onSpin={spin} onOpen={open} />
       </div>
+
+      {sheetOpen && (
+        <CountrySheet value={country} suggested={detected} onChange={chooseCountry} onClose={() => setSheetOpen(false)} />
+      )}
     </main>
   )
 }
