@@ -88,7 +88,7 @@ export async function GET(_req: Request, ctx: RouteContext<'/card/[id]/image'>) 
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <div style={{ fontFamily: serifFamily, fontSize: 64, lineHeight: 1.05 }}>{headline}</div>
               {song && (
-                <div style={{ marginTop: 'auto', fontSize: 30, color: '#71717a' }}>{`No.1: ${song.title} · ${song.artist}`}</div>
+                <div style={{ marginTop: 'auto', fontSize: 30, color: '#71717a' }}>{`Song of the year: ${song.title} · ${song.artist}`}</div>
               )}
             </div>
           </div>

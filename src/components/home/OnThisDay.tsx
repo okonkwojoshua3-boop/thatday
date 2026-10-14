@@ -209,7 +209,7 @@ export default function OnThisDay({ onPick }: { onPick: () => void }) {
                     )}
                   </span>
                   <span className="mt-1 w-full truncate text-center font-serif text-[12px] leading-4 text-ink-secondary italic">
-                    {p.key === 'song' ? 'No.1 song' : p.key === 'front' ? 'Front page' : p.key === 'price' ? (current.price ?? 'The prices') : 'Born today'}
+                    {p.key === 'song' ? 'Song of the year' : p.key === 'front' ? 'Front page' : p.key === 'price' ? (current.price ?? 'The prices') : 'Born today'}
                   </span>
                 </div>
               ))}
@@ -236,7 +236,7 @@ export default function OnThisDay({ onPick }: { onPick: () => void }) {
                 {current.headline}
               </p>
               {current.song && (
-                <p className="mt-2.5 text-[14px] leading-[18px] text-ink-secondary">Also: “{current.song}” is No.1 on the radio.</p>
+                <p className="mt-2.5 text-[14px] leading-[18px] text-ink-secondary">Also: “{current.song}” was the song of the year.</p>
               )}
             </div>
           )}

@@ -124,6 +124,19 @@ export function YearsCard({ data }: { data: StoryData }) {
 
 // ── 4 · No.1 song ─────────────────────────────────────────────────────────────
 
+// Say exactly what the pick is: a chart's No.1 for the year, this week's chart,
+// or (before a country had charts) the year's defining hit
+function songKicker(song: StoryData['song']) {
+  if (!song) return 'On the radio'
+  if (song.basis === 'week') return 'No.1 this week'
+  return song.basis === 'chart' ? `No.1 of ${song.year}` : `The sound of ${song.year}`
+}
+
+function songSource(song: NonNullable<StoryData['song']>) {
+  if (song.basis === 'week') return song.chart
+  return song.basis === 'chart' ? `${song.chart}, year-end` : `biggest hit of ${song.year}`
+}
+
 export function SongCard({
   data,
   onPlayingChange,
@@ -153,7 +166,7 @@ export function SongCard({
   return (
     <div className="flex flex-1 flex-col items-center">
       <div className="mt-[50px] w-full">
-        <Kicker>No.1 on the radio</Kicker>
+        <Kicker>{songKicker(song)}</Kicker>
         <Title>What everyone was humming</Title>
       </div>
 
@@ -170,12 +183,12 @@ export function SongCard({
           <div className="px-1.5">
             <p className="mt-4 truncate font-serif text-[32px] leading-[32px]">{song?.title ?? 'Off the charts'}</p>
             <p className="mt-1.5 truncate text-[14px] leading-[18px] text-ink-secondary">
-              {song ? `${song.artist} · ${song.chart}` : 'No chart data for this year yet'}
+              {song ? `${song.artist} · ${songSource(song)}` : 'No song on record for this year yet'}
             </p>
           </div>
           <span className="mt-3.5 block h-px bg-line" />
           <p className="mt-3.5 px-1.5 pb-2 font-serif text-[18px] leading-[23px] text-ink-secondary italic">
-            {data.genZ ? `“On every ringtone that ${SEASONS[data.month]}.”` : '“Played on every radio that week.”'}
+            {data.genZ ? `“On every ringtone that ${SEASONS[data.month]}.”` : `“Played on every radio that ${song?.basis === 'week' ? 'week' : 'year'}.”`}
           </p>
         </div>
         <span className="story-stamp absolute -top-[18px] right-[4px] rotate-6" style={i(4)}>
@@ -315,7 +328,7 @@ function Ticket({ item, symbol, year, index }: { item: PriceComparison; symbol: 
       <p className="absolute top-[78px] left-5 font-mono text-[10px] leading-[13px] font-medium tracking-[0.04em] text-ink-muted">{year}</p>
       <LongArrow className="absolute top-[50px] left-[118px] h-2.5 w-[39px] text-ink-muted" />
       <p className={`absolute top-9 right-[64px] w-[120px] text-right font-serif italic ${long ? 'text-[28px] leading-10' : 'text-[40px] leading-10'}`}>{now}</p>
-      <p className="absolute top-[78px] right-[64px] font-mono text-[10px] leading-[13px] font-medium tracking-[0.04em] text-ink-muted">TODAY</p>
+      <p className="absolute top-[78px] right-[64px] font-mono text-[10px] leading-[13px] font-medium tracking-[0.04em] text-ink-muted">{item.nowYear >= new Date().getFullYear() ? 'TODAY' : item.nowYear}</p>
       {/* Tear line with notches */}
       <span className="absolute inset-y-0 left-[289px] border-l-[1.5px] border-dashed border-line" />
       <span className="absolute -top-2 left-[282px] size-4 rounded-full border border-line bg-canvas [clip-path:inset(50%_0_0_0)]" />
@@ -328,7 +341,7 @@ function Ticket({ item, symbol, year, index }: { item: PriceComparison; symbol: 
 }
 
 export function PricesCard({ data }: { data: StoryData }) {
-  const { items, currencySymbol, local } = data.prices
+  const { items, currencySymbol, local, since } = data.prices
   const title = local ? `What ${data.countryName} paid` : 'A dollar went further'
   return (
     <div className="flex flex-1 flex-col">
@@ -340,9 +353,18 @@ export function PricesCard({ data }: { data: StoryData }) {
         {items.map((item, n) => (
           <Ticket key={item.key} item={item} symbol={currencySymbol} year={data.year} index={n} />
         ))}
+        {items.length === 0 && (
+          <p className="story-in text-[16px] leading-[21px] text-ink-secondary" style={i(3)}>
+            Our {data.countryName} price records start in {since}. Pick a later year to see what things cost.
+          </p>
+        )}
       </div>
       <div className="mt-auto pt-8">
-        <Hint>{local ? `${data.countryName} averages.` : 'US averages.'} Tap to continue →</Hint>
+        {items.length > 0 ? (
+          <Hint>{local ? `${data.countryName} averages` : 'US averages'}, estimated between survey years. Tap to continue →</Hint>
+        ) : (
+          <Hint />
+        )}
       </div>
     </div>
   )
@@ -357,7 +379,7 @@ export function stampsFor(data: StoryData, shared: boolean): Record<StampKey, bo
     song: !!data.song,
     front: !!data.front,
     prices: data.prices.items.length > 0,
-    twins: data.twins > 0,
+    twins: data.twins,
     years: true,
     share: shared,
   }
@@ -550,7 +572,7 @@ export function PassportCard({
           <span className="mt-4 block h-px bg-line" />
           <div className="mt-[15px] grid grid-cols-2 gap-x-2.5 gap-y-[18px] pb-6">
             {[
-              ['No.1 song', data.song?.title ?? '—'],
+              [data.song?.basis === 'hit' ? 'Song of the year' : 'No.1 song', data.song?.title ?? '—'],
               ['Front page', data.front?.headline ?? '—'],
               [firstPrice?.label ?? 'Prices', firstPrice ? price(firstPrice.then, data.prices.currencySymbol, firstPrice.cents) : '—'],
               ['Stamps', `${count} of 6`],

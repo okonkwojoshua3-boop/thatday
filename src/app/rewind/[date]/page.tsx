@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { notFound, redirect } from 'next/navigation'
 import { isValidDate, getDateParts, formatDisplayDate, getMinDate, getMaxDate } from '@/lib/utils/date'
 import { getFrontPage, splitHeadline } from '@/lib/data/events'
-import { getPeopleForDate } from '@/lib/data/people'
+import { hasBirthdayTwins } from '@/lib/data/people'
 import { getSongForYear } from '@/lib/data/songs'
 import { getThenVsNow, usPostageCents } from '@/lib/data/costs'
 import { encodeCardId } from '@/lib/utils/cardId'
@@ -42,9 +42,9 @@ export default async function RewindPage(props: PageProps<'/rewind/[date]'>) {
   const today = new Date()
   const isBirthday = today.getMonth() + 1 === month && today.getDate() === day
 
-  const [front, people, song] = await Promise.all([
+  const [front, twins, song] = await Promise.all([
     getFrontPage(month, day, year, country),
-    getPeopleForDate(month, day, country),
+    hasBirthdayTwins(month, day, country),
     getSongForYear(year, country, date),
   ])
 
@@ -64,7 +64,7 @@ export default async function RewindPage(props: PageProps<'/rewind/[date]'>) {
     yearsAgo: today.getFullYear() - year,
     elapsed: elapsed(then, today),
     thisYear: today.getFullYear(),
-    song: song && { title: song.title, artist: song.artist, chart: song.chart, previewUrl: song.previewUrl },
+    song: song && { title: song.title, artist: song.artist, chart: song.chart, year: song.year, basis: song.basis, previewUrl: song.previewUrl },
     front: front && lead && {
       headline: lead.headline,
       summary: lead.deck ?? front.lead.summary,
@@ -73,9 +73,9 @@ export default async function RewindPage(props: PageProps<'/rewind/[date]'>) {
       sameYear: front.sameYear,
       more: front.more.map(e => ({ headline: splitHeadline(e.title).headline, year: e.year })),
     },
-    prices: getThenVsNow(year, country),
+    prices: getThenVsNow(year, country, date),
     stampValue: usStamps ? `${usPostageCents(year)}¢` : null,
-    twins: people.length,
+    twins,
     issued: today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
     cardId: encodeCardId(date, isBirthday, country),
   }

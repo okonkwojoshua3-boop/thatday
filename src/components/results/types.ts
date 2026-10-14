@@ -18,7 +18,7 @@ export interface StoryData {
   /** Exact elapsed time, e.g. 36 years, 11 months and 4 days */
   elapsed: { years: number; months: number; days: number }
   thisYear: number
-  song: { title: string; artist: string; chart: string; previewUrl?: string } | null
+  song: { title: string; artist: string; chart: string; year: number; basis: 'chart' | 'hit' | 'week'; previewUrl?: string } | null
   front: {
     headline: string
     summary?: string
@@ -27,10 +27,11 @@ export interface StoryData {
     sameYear: boolean
     more: { headline: string; year: number }[]
   } | null
-  prices: { items: PriceComparison[]; currencySymbol: string; local: boolean }
+  prices: { items: PriceComparison[]; currencySymbol: string; local: boolean; nowYear: number; since: number }
   /** US stamp price for the year (25¢ in 1989), shown on the postage stamps */
   stampValue: string | null
-  twins: number
+  /** Someone notable shares this birthday */
+  twins: boolean
   issued: string
   cardId: string
 }
