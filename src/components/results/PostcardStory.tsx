@@ -9,7 +9,9 @@ import { SHARED_KEY, usePostcards, useStored, type Postcard } from '@/lib/postca
 import { stampsFor } from './cards'
 import SavedMoment from './SavedMoment'
 import type { StoryData } from './types'
-import { feel, haptic } from '@/lib/feedback'
+import { feel, haptic, play } from '@/lib/feedback'
+import { duckSoundtrack, setSection, stopSoundtrack } from '@/lib/soundtrack'
+import SoundToggle from '@/components/ui/SoundToggle'
 
 // Figma 12 — Results · Postcard story. Envelope first, then a Spotify-style
 // story: tap right for next, left for back, hold to pause.
@@ -54,6 +56,17 @@ export default function PostcardStory({ data }: { data: StoryData }) {
   const last = CARDS.length - 1
   const card = CARDS[index]
   const paused = held || playing
+
+  // Soundtrack: each card adds a layer, the song preview takes over while it
+  // plays, and a swoosh marks every card change. It stops when the story closes.
+  useEffect(() => setSection(opened ? index : 0), [opened, index])
+  useEffect(() => duckSoundtrack(playing), [playing])
+  const shown = useRef(index)
+  useEffect(() => {
+    if (opened && index !== shown.current) play('swish')
+    shown.current = index
+  }, [opened, index])
+  useEffect(() => () => stopSoundtrack(), [])
 
   const next = useCallback(() => setIndex(n => Math.min(last, n + 1)), [last])
   const prev = useCallback(() => setIndex(n => Math.max(0, n - 1)), [])
@@ -177,14 +190,17 @@ export default function PostcardStory({ data }: { data: StoryData }) {
 
         <div className="mt-[18px] flex items-center justify-between">
           <Brand />
-          <button
-            type="button"
-            onClick={pickAnother}
-            aria-label="Close and pick another day"
-            className="flex size-8 items-center justify-center rounded-full border border-line bg-card transition-transform duration-150 ease-out active:scale-[0.94]"
-          >
-            <CloseIcon className="size-3" />
-          </button>
+          <div className="flex items-center gap-2">
+            <SoundToggle className="size-8" />
+            <button
+              type="button"
+              onClick={pickAnother}
+              aria-label="Close and pick another day"
+              className="flex size-8 items-center justify-center rounded-full border border-line bg-card transition-transform duration-150 ease-out active:scale-[0.94]"
+            >
+              <CloseIcon className="size-3" />
+            </button>
+          </div>
         </div>
 
         <section key={card} aria-live="polite" className="flex flex-1 flex-col">
