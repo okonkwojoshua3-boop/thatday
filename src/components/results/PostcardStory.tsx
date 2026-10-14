@@ -9,6 +9,7 @@ import { SHARED_KEY, usePostcards, useStored, type Postcard } from '@/lib/postca
 import { stampsFor } from './cards'
 import SavedMoment from './SavedMoment'
 import type { StoryData } from './types'
+import { feel, haptic } from '@/lib/feedback'
 
 // Figma 12 — Results · Postcard story. Envelope first, then a Spotify-style
 // story: tap right for next, left for back, hold to pause.
@@ -77,7 +78,10 @@ export default function PostcardStory({ data }: { data: StoryData }) {
         await navigator.clipboard.writeText(url)
         flash('Link copied')
       }
-      if (!isShared) flash('Last stamp collected')
+      if (!isShared) {
+        flash('Last stamp collected')
+        feel('thud', 'success')
+      }
       setShared(prev => (prev.includes(data.date) ? prev : [...prev, data.date]))
     } catch (e) {
       // Closing the share sheet isn't an error worth showing
@@ -109,8 +113,13 @@ export default function PostcardStory({ data }: { data: StoryData }) {
     if ((e.target as HTMLElement).closest('button, a, audio')) return
     if (wasHold.current) return
     const box = e.currentTarget.getBoundingClientRect()
-    if (e.clientX - box.left < box.width / 3) prev()
-    else next()
+    if (e.clientX - box.left < box.width / 3) {
+      if (index > 0) haptic('selection')
+      prev()
+    } else {
+      if (index < last) haptic('selection')
+      next()
+    }
   }
 
   useEffect(() => {

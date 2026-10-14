@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { usePostcards, useHydrated, type Postcard } from '@/lib/postcards'
+import { feel } from '@/lib/feedback'
 import PostcardCard, { PostcardPhoto, parts, savedAgo } from './PostcardCard'
 
 // Figma 14 — Postcard box: saved days stacked like a wallet, a timeline by
@@ -119,7 +120,10 @@ export default function PostcardBox() {
                     key={p.key}
                     p={p}
                     open={n === cards.length - 1}
-                    onClick={() => setSelected(p.key)}
+                    onClick={() => {
+                      feel('swish', 'light')
+                      setSelected(p.key)
+                    }}
                     className="stack-card absolute inset-x-0"
                     style={{ top: n * PITCH, animationDelay: `${n * 50}ms` }}
                   />

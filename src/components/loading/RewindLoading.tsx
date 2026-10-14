@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Flap } from '@/components/home/FlipBoard'
+import { haptic, play } from '@/lib/feedback'
 
 // Figma 06 — Loading · Rewinding. Shown while the results page renders on the
 // server. We can't see the server's real progress, so the board and checklist
@@ -86,6 +87,10 @@ export default function RewindLoading({ date }: { date: string }) {
 
   if (!target) return <main className="min-h-svh bg-canvas" />
 
+  return <Rewinding target={target} now={now} elapsed={elapsed} />
+}
+
+function Rewinding({ target, now, elapsed }: { target: { y: number; m: number; d: number }; now: number; elapsed: number }) {
   const genZ = target.y >= 2000
   const race = Math.min(1, elapsed / RACE_MS)
   const shownYear = Math.round(now - (now - target.y) * easeOut(race))
@@ -97,6 +102,18 @@ export default function RewindLoading({ date }: { date: string }) {
   const partial = landed ? 0 : Math.min(1, (elapsed - prevMs) / Math.max(1, nextMs - prevMs))
   const progress = landed ? 1 : (done + partial * 0.9) / STEPS.length
   const yearsAgo = now - target.y
+
+  // Flaps clack as the year races back, each step ticks off, then it lands
+  useEffect(() => {
+    if (shownYear !== now) play('flap')
+  }, [shownYear, now])
+  useEffect(() => {
+    if (done > 0 && done < STEPS.length) play('tick')
+    if (done === STEPS.length) {
+      play('chime')
+      haptic('success')
+    }
+  }, [done])
 
   const chars = `${String(target.d).padStart(2, '0')}${MONTHS[target.m]}${shownYear}`
 

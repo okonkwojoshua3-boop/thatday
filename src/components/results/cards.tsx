@@ -5,6 +5,7 @@ import Image from 'next/image'
 import type { PriceComparison } from '@/lib/data/costs'
 import { CardStamp, InkLines, LongArrow, MaskIcon, Postmark, PostageStamp, STAMP_INK, Sticker } from './art'
 import type { StoryData } from './types'
+import { feel } from '@/lib/feedback'
 
 // Figma 12 · 3–8: one keepsake per card. Children with `story-in` and a --i
 // index enter in a 50ms stagger; stamps land last.
@@ -362,10 +363,23 @@ export function stampsFor(data: StoryData, shared: boolean): Record<StampKey, bo
   }
 }
 
+const STAMP_ORDER: StampKey[] = ['song', 'front', 'prices', 'twins', 'years']
+
 export function StampsCard({ data, shared }: { data: StoryData; shared: boolean }) {
   const got = stampsFor(data, shared)
   const count = Object.values(got).filter(Boolean).length
   const g = data.genZ
+
+  // Each collected stamp lands with a thud as it presses in
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const timers = STAMP_ORDER.filter(k => got[k]).map(k =>
+      window.setTimeout(() => feel('thud', 'light'), 250 + STAMP_ORDER.indexOf(k) * 120 + 120),
+    )
+    return () => timers.forEach(t => window.clearTimeout(t))
+    // Only when the card first shows
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const icon = (halftone: string, sticker: string, box: { x: number; y: number; w: number; h: number }, size = 'top-[21px] left-[15px] size-[58px]') =>
     g ? (
