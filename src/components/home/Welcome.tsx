@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import Image from 'next/image'
+import PhotoCredits from '@/components/ui/PhotoCredits'
+import { useHydrated } from '@/lib/postcards'
 
-// Figma 02 — Welcome (photos). Placeholder moments until we pull real ones.
+// Figma 02 — Welcome (photos). Credits for these live in lib/photoCredits.ts.
 const ARCHES = [
   { src: '/welcome/moon.jpg', year: 1969, alt: 'Buzz Aldrin on the Moon, 1969' },
   { src: '/welcome/ali.jpg', year: 1967, alt: 'Muhammad Ali, 1967' },
@@ -25,9 +27,8 @@ function daysSince1950() {
 }
 
 export default function Welcome({ onStart }: { onStart: () => void }) {
-  // Counted on the visitor's own day, after mount, since the page is prerendered
-  const [days, setDays] = useState<number | null>(null)
-  useEffect(() => setDays(daysSince1950()), [])
+  // Counted on the visitor's own day once hydrated, since the page is prerendered
+  const days = useHydrated() ? daysSince1950() : null
 
   // Desktop: Enter starts, once the splash is out of the way
   useEffect(() => {
@@ -135,6 +136,8 @@ export default function Welcome({ onStart }: { onStart: () => void }) {
         </button>
         <p className="text-[12px] text-ink-muted">
           Any date from 1950 to yesterday.<span className="hidden md:inline"> Press Enter to start.</span>
+          {' · '}
+          <PhotoCredits />
         </p>
       </div>
     </main>

@@ -63,8 +63,10 @@ export function useHydrated() {
 }
 const noop = () => () => {}
 
-/** Days the visitor has shared (dates). Earns the sixth stamp. */
+/** Days the visitor has shared (dates). Earns the "Sent" stamp. */
 export const SHARED_KEY = 'thatday-shared'
+/** Stamps earned on a day's cards, as "date|country|stamp" */
+export const STAMPS_KEY = 'thatday-stamps'
 
 // ── Postcards (Figma 14 · Postcard box) ──────────────────────────────────────
 

@@ -27,7 +27,36 @@ const ENVELOPE_STICKERS = [
   { src: '/results/genz/env-play.png', x: 250.5, y: 213.3, w: 65.3, h: 60 },
 ]
 
-export default function Envelope({ data, onRead }: { data: StoryData; onRead: () => void }) {
+export interface EnvelopeSticker {
+  src: string
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+export default function Envelope({
+  data,
+  onRead,
+  kicker,
+  stickers,
+  headerStickers,
+  footer,
+  soundtrack = true,
+}: {
+  data: StoryData
+  onRead: () => void
+  /** Small line above the title ("Someone sent you") */
+  kicker?: string
+  /** Gen Z stickers round the envelope (relative to its top-left), replacing the default set */
+  stickers?: EnvelopeSticker[]
+  /** Gen Z stickers beside the title, on a 390-wide strip starting at the header's top */
+  headerStickers?: EnvelopeSticker[]
+  /** Shown under "Tap to open" */
+  footer?: React.ReactNode
+  /** Start the story's beat as the envelope opens */
+  soundtrack?: boolean
+}) {
   const [phase, setPhase] = useState<'sealed' | 'opening' | 'open'>('sealed')
 
   function open() {
@@ -48,7 +77,7 @@ export default function Envelope({ data, onRead }: { data: StoryData; onRead: ()
     feel('seal', 'medium')
     play('swish', 160)
     // The story's beat comes in as the postcard slides out
-    startSoundtrack(data.genZ ? 'genz' : 'print')
+    if (soundtrack) startSoundtrack(data.genZ ? 'genz' : 'print')
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduce) {
       onRead()
@@ -56,7 +85,7 @@ export default function Envelope({ data, onRead }: { data: StoryData; onRead: ()
     }
     const t = window.setTimeout(() => setPhase('open'), OPEN_MS)
     return () => window.clearTimeout(t)
-  }, [phase, onRead, data.genZ])
+  }, [phase, onRead, data.genZ, soundtrack])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -80,7 +109,17 @@ export default function Envelope({ data, onRead }: { data: StoryData; onRead: ()
     >
       <Brand />
 
-      <div className="env-header mt-[90px] flex flex-col items-center text-center">
+      <div className={`env-header relative flex flex-col items-center text-center ${kicker ? 'mt-16' : 'mt-[90px]'}`}>
+        {data.genZ && headerStickers && (
+          <div aria-hidden="true" className="pointer-events-none absolute top-0 left-1/2 w-[390px] -translate-x-1/2">
+            {headerStickers.map((s, i) => (
+              <Sticker key={s.src} {...s} delay={300 + i * 80} />
+            ))}
+          </div>
+        )}
+        {kicker && (
+          <p className="mb-2.5 font-mono text-[12px] leading-4 font-medium tracking-[0.08em] text-ink-muted uppercase">{kicker}</p>
+        )}
         <h1 className="font-serif text-[40px] leading-[42px] tracking-[-0.01em]">
           A postcard from
           <br />
@@ -166,7 +205,7 @@ export default function Envelope({ data, onRead }: { data: StoryData; onRead: ()
           </div>
         </div>
 
-        {data.genZ && ENVELOPE_STICKERS.map((s, i) => <Sticker key={s.src} {...s} delay={300 + i * 80} />)}
+        {data.genZ && (stickers ?? ENVELOPE_STICKERS).map((s, i) => <Sticker key={s.src} {...s} delay={300 + i * 80} />)}
       </div>
 
       <div className="mt-auto flex flex-col items-center gap-3">
@@ -186,6 +225,7 @@ export default function Envelope({ data, onRead }: { data: StoryData; onRead: ()
         >
           {opened ? 'Tap to read' : 'Tap to open'}
         </button>
+        {footer}
       </div>
     </main>
   )

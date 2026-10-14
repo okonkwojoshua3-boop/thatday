@@ -35,33 +35,3 @@ export interface CostItem {
   label: string
   emoji: string
 }
-
-export interface LifeStats {
-  days: number
-  weeks: number
-  months: number
-  years: number
-  heartbeats: number
-  sleepHours: number
-  meals: number
-  sunrises: number
-  breaths: number
-}
-
-export interface RewindResponse {
-  date: string
-  isBirthday: boolean
-  song: Song | null
-  event: HistoricalEvent | null
-  people: FamousPerson[]
-  costs: HistoricalCosts
-  lifeStats: LifeStats
-}
-
-export interface CardData {
-  date: string
-  isBirthday: boolean
-  song: Song | null
-  event: HistoricalEvent | null
-  lifeStats: LifeStats
-}

@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The postcard image reads its art from public/ at request time
+  outputFileTracingIncludes: {
+    '/card/[id]/image': ['./public/share/og-*.png', './public/icons/halftone/song.png', './public/results/record-large.png'],
+  },
   images: {
     remotePatterns: [
       {
