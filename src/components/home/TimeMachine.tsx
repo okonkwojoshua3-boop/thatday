@@ -468,8 +468,8 @@ function EraStickers({ items, className = '' }: { items: EraSticker[]; className
           key={s.src}
           src={s.src}
           alt=""
-          width={Math.ceil(s.w)}
-          height={Math.ceil(s.h)}
+          width={Math.round(s.w)}
+          height={Math.round(s.h)}
           className="era-pop absolute max-w-none"
           style={{ left: s.x, top: s.y, width: s.w, height: s.h, animationDelay: `${n * 50}ms` }}
         />

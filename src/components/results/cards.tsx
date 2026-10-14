@@ -392,7 +392,7 @@ export function StampsCard({ data, stamps: got }: { data: StoryData; stamps: Sta
   }, [])
 
   const sticker = (src: string, box: { x: number; y: number; w: number; h: number }) => (
-    <Image src={src} alt="" width={Math.ceil(box.w)} height={Math.ceil(box.h)} className="absolute max-w-none" style={{ left: box.x, top: box.y, width: box.w, height: box.h }} />
+    <Image src={src} alt="" width={Math.round(box.w)} height={Math.round(box.h)} className="absolute max-w-none" style={{ left: box.x, top: box.y, width: box.w, height: box.h }} />
   )
   const icon = (halftone: string, src: string, box: { x: number; y: number; w: number; h: number }) =>
     g ? sticker(src, box) : <MaskIcon src={halftone} className="absolute top-[21px] left-[15px] size-[58px]" color={STAMP_INK} />
