@@ -1,7 +1,9 @@
 'use client'
 
 import PostcardCard, { BoxBadge, parts } from '@/components/box/PostcardCard'
+import { useEffect } from 'react'
 import { usePostcards } from '@/lib/postcards'
+import { feel } from '@/lib/feedback'
 
 // Figma 14 · Saved moment: after "Save" on the passport the postcard drops
 // onto a fanned pile and the envelope badge ticks up.
@@ -34,6 +36,12 @@ export default function SavedMoment({
   const offset = FAN.length - pile.length
   const { y, m, d } = parts(current.split('|')[0])
   const n = saved.length
+
+  // The postcard lands on the pile (pile-drop: 150ms delay, settles ~300ms in)
+  useEffect(() => {
+    const t = window.setTimeout(() => feel('thud', 'medium'), 450)
+    return () => window.clearTimeout(t)
+  }, [])
 
   return (
     <main className="story-enter flex min-h-svh flex-col bg-canvas text-ink">

@@ -7,6 +7,7 @@ import { BoxBadge } from '@/components/box/PostcardCard'
 import { Brand } from '@/components/results/art'
 import { COUNTRY_KEY, isCountryCode } from '@/lib/countries'
 import { usePostcards } from '@/lib/postcards'
+import { feel } from '@/lib/feedback'
 import type { DayYear } from '@/app/api/on-this-day/route'
 
 // Figma 13 — On this day: returning visitors land on today's date across
@@ -110,6 +111,7 @@ export default function OnThisDay({ onPick }: { onPick: () => void }) {
     if (!count || next === index || next < 0 || next >= count) return
     setDir(next > index ? 1 : -1)
     setIndex(next)
+    feel('detent', 'selection')
   }
 
   function open() {

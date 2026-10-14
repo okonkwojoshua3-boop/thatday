@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Brand, MaskIcon, Postmark, PostageStamp, Sticker } from './art'
 import type { StoryData } from './types'
+import { feel, play } from '@/lib/feedback'
 
 // Figma 12 · 1–2: the day arrives as mail. The seal breaks, the flap swings up,
 // a postcard slides out, then the story begins.
@@ -42,6 +43,9 @@ export default function Envelope({ data, onRead }: { data: StoryData; onRead: ()
 
   useEffect(() => {
     if (phase !== 'opening') return
+    // The seal cracks, then the flap and postcard slide
+    feel('seal', 'medium')
+    play('swish', 160)
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduce) {
       onRead()

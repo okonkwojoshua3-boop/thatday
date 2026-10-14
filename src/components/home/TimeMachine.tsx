@@ -7,6 +7,7 @@ import { COUNTRY_KEY, detectCountry, getCountry, isCountryCode, type CountryCode
 import CountrySheet, { Flag } from './CountrySheet'
 import { BoxBadge } from '@/components/box/PostcardCard'
 import { usePostcards } from '@/lib/postcards'
+import { feel, haptic, play, setSoundEnabled, useSoundEnabled } from '@/lib/feedback'
 import FlipBoard, { type BoardGroup, type DateUnit } from './FlipBoard'
 import RingDial from './RingDial'
 
@@ -59,6 +60,11 @@ function clamp(date: YMD, max: YMD): YMD {
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
+
+// Long ticks on the dial; they also click a little heavier
+function isMajor(unit: DateUnit, i: number) {
+  return unit === 'year' ? (MIN_YEAR + i) % 10 === 0 : unit === 'month' ? i % 3 === 0 : i === 0 || (i + 1) % 5 === 0
+}
 const unitName = (unit: DateUnit, n: number) => `${n} ${unit}${n === 1 ? '' : 's'}`
 
 export default function TimeMachine({ onBack }: { onBack: () => void }) {
@@ -107,12 +113,24 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
   const genZ = !spinning && date.y >= 2000
   const y2k = genZ && date.y === 2000
 
+  // A little sparkle as the stickers pop in (Surprise me has its own landing)
+  const wasGenZ = useRef(genZ)
+  useEffect(() => {
+    if (genZ && !wasGenZ.current && !surprise) {
+      play('chime')
+      haptic('success')
+    }
+    wasGenZ.current = genZ
+  }, [genZ, surprise])
+
   const unit: DateUnit = precision === 'year' ? 'year' : precision === 'month' && active === 'day' ? 'month' : active
   const dialIndex = unit === 'year' ? date.y - MIN_YEAR : unit === 'month' ? date.m : date.d - 1
   const dialCount = unit === 'year' ? max.y - MIN_YEAR + 1 : unit === 'month' ? 12 : daysIn(date.y, date.m)
 
   const setIndex = useCallback(
     (i: number) => {
+      if (isMajor(unit, i)) feel('detent', 'medium')
+      else feel('tick', 'selection')
       if (unit === 'year') update({ y: MIN_YEAR + i })
       else if (unit === 'month') update({ m: i })
       else update({ d: i + 1 })
@@ -126,6 +144,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
   )
 
   function choosePrecision(p: Precision) {
+    if (p !== precision) feel('tick', 'selection')
     setPrecision(p)
     if (p === 'year') setActive('year')
     else if (p === 'month' && active === 'day') setActive('month')
@@ -150,10 +169,14 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
     setActive('year')
     setSurprise(null)
 
+    feel('lever', 'medium')
     const land = () => {
       setDate(pick.date)
       setSurprise(pick)
       setSpinning(false)
+      play('thud')
+      play('chime', 90)
+      haptic('success')
     }
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return land()
 
@@ -164,6 +187,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
       const y = MIN_YEAR + Math.floor(Math.random() * (max.y - MIN_YEAR + 1))
       const m = Math.floor(Math.random() * 12)
       setDate(clamp({ y, m, d: 1 + Math.floor(Math.random() * 28) }, max))
+      play('flap')
       spinTimer.current = window.setTimeout(tick, SPIN_TICK)
     }
     tick()
@@ -231,9 +255,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
       onChange={setIndex}
       onDragStart={() => setDragFrom(dialIndex)}
       onDragEnd={() => setDragFrom(null)}
-      isMajor={i =>
-        unit === 'year' ? (MIN_YEAR + i) % 10 === 0 : unit === 'month' ? i % 3 === 0 : i === 0 || (i + 1) % 5 === 0
-      }
+      isMajor={i => isMajor(unit, i)}
       label={i =>
         unit === 'year'
           ? (MIN_YEAR + i) % 10 === 0 ? `'${String(MIN_YEAR + i).slice(2)}` : null
@@ -304,6 +326,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
           <Arrow className="size-5 rotate-180" />
         </button>
         <div className="flex items-center gap-2">
+          <SoundToggle />
           {saved.length > 0 && <BoxBadge count={saved.length} className="h-10" />}
           <button
             type="button"
@@ -359,6 +382,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
               groups={groups}
               active={unit}
               onSelect={u => {
+                if (u !== unit) feel('tick', 'selection')
                 setSurprise(null)
                 setActive(u)
               }}
@@ -544,6 +568,28 @@ function Timeline({ year, max, onPick }: { year: number; max: number; onPick: (y
         style={{ left: pct(year) }}
       />
     </div>
+  )
+}
+
+function SoundToggle() {
+  const on = useSoundEnabled()
+  return (
+    <button
+      type="button"
+      onClick={() => setSoundEnabled(!on)}
+      aria-pressed={on}
+      aria-label="Sound and haptics"
+      className="flex size-10 items-center justify-center rounded-full border border-line bg-card text-ink shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-transform duration-150 ease-out active:scale-[0.94]"
+    >
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="size-5">
+        <path d="M3.5 7.5h2.8L10 4.5v11l-3.7-3H3.5z" fill="currentColor" />
+        {on ? (
+          <path d="M13 7.2a4 4 0 0 1 0 5.6M15.2 5a7 7 0 0 1 0 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        ) : (
+          <path d="m13 8 4 4m0-4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        )}
+      </svg>
+    </button>
   )
 }
 
