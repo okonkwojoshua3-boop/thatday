@@ -10,7 +10,8 @@ import { PHOTO_CREDITS } from '@/lib/photoCredits'
 
 const EXIT_MS = 240
 
-export default function PhotoCredits({ className = '' }: { className?: string }) {
+/** `first`: the src of the photo on screen, listed at the top */
+export default function PhotoCredits({ className = '', first }: { className?: string; first?: string }) {
   const [open, setOpen] = useState(false)
   return (
     <>
@@ -23,13 +24,16 @@ export default function PhotoCredits({ className = '' }: { className?: string })
         Photo credits
       </button>
       {/* Portalled: callers sit inside <p> and transformed (animated) parents */}
-      {open && createPortal(<CreditsSheet onClose={() => setOpen(false)} />, document.body)}
+      {open && createPortal(<CreditsSheet first={first} onClose={() => setOpen(false)} />, document.body)}
     </>
   )
 }
 
-function CreditsSheet({ onClose }: { onClose: () => void }) {
+function CreditsSheet({ first, onClose }: { first?: string; onClose: () => void }) {
   const panel = useRef<HTMLDivElement>(null)
+  const credits = first
+    ? [...PHOTO_CREDITS.filter(c => c.src === first), ...PHOTO_CREDITS.filter(c => c.src !== first)]
+    : PHOTO_CREDITS
   const [closing, setClosing] = useState(false)
 
   const onCloseRef = useRef(onClose)
@@ -94,7 +98,7 @@ function CreditsSheet({ onClose }: { onClose: () => void }) {
         </div>
 
         <ul className="flex flex-col gap-5 overflow-y-auto overscroll-contain px-6 pb-[34px] [scrollbar-width:none]">
-          {PHOTO_CREDITS.map(c => (
+          {credits.map(c => (
             <li key={c.src} className="flex gap-3.5">
               <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-card">
                 <Image src={c.src} alt="" fill sizes="56px" className="object-cover" />
