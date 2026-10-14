@@ -17,6 +17,8 @@ Gotchas:
 - If `npx tsc` / `npx eslint` fail with `Cannot find module '../lib/...'`, the `node_modules/.bin` shims are broken: run `npm install`, or call the tools directly (`node node_modules/typescript/bin/tsc --noEmit`, `node node_modules/eslint/bin/eslint.js <paths>`).
 - Turbopack can keep serving stale `globals.css` (new rules missing even after restarting). Fix: stop the dev server, `rm -rf .next`, start again.
 - Lint is clean; keep it that way.
+- The dev server can return a stale `/card/[id]/image` PNG for a URL it has already served; add a throwaway query (`&v=2`) to see a change.
+- Overlays opened from inside animated content (`welcome-reveal`, `teaser-in` and other transformed parents) must portal to `document.body` (see `PhotoCredits`): a transformed ancestor breaks `position: fixed`, and some callers sit inside a `<p>`.
 - Browser testing with Claude in Chrome: if the automation window is in the background, the page reports `document.hidden`, timers are throttled, clicks may not register as user activation, and audio can't start. Check `document.visibilityState` before trusting a "nothing happened" result. Hydration warnings mentioning `bis_skin_checked` come from a browser extension, not the app.
 
 Env (`.env.local`, see `.env.local.example`): `LASTFM_API_KEY` (country charts for recent dates) and `TMDB_API_KEY` (celebrity photos). Both optional; code falls back when missing.
@@ -63,7 +65,7 @@ Remote image hosts must be allowed in `next.config.ts` `images.remotePatterns` (
 
 ## Design system
 
-The UI matches the Figma file "ThatDay" (key `ZSAOnsO5TqGy40jEJtnDZO`), page **"Design"**: 01 Splash, 02 Welcome, 03 Time Machine, 04 Country picker, 05 Loading, 06 Results, 07 On this day, 08 Postcard box (light and dark sections for each). The "Archive" page holds old explorations, including the Era style board. The official Figma MCP is on a Starter plan with a low call limit; the `figma-console` desktop bridge (`figma_execute`) reads the open file without that limit. Code comments still use the older numbering (e.g. "Figma 12" for Results).
+The UI matches the Figma file "ThatDay" (key `ZSAOnsO5TqGy40jEJtnDZO`), page **"Design"**: 01 Splash, 02 Welcome, 03 Time Machine, 04 Country picker, 05 Loading, 06 Results, 07 On this day, 08 Postcard box, 09 Share page (light and dark sections for each). The "Archive" page holds old explorations, including the Era style board. The official Figma MCP is on a Starter plan with a low call limit; the `figma-console` desktop bridge (`figma_execute`) reads the open file without that limit. Code comments still use the older numbering (e.g. "Figma 12" for Results).
 
 - Colour tokens `--td-*` in `src/app/globals.css`, exposed to Tailwind as `bg-canvas`, `bg-board`, `bg-card`, `text-ink`, `text-ink-secondary`, `text-ink-muted`, `border-line`, `era-green`. Dark mode follows `prefers-color-scheme` only; use the tokens, not `dark:` overrides. Exception: postage stamps (`STAMP_INK` / `STAMP_PAPER` in `results/art.tsx`) stay cream and ink in both themes, like real paper.
 - Fonts: `font-serif` = Instrument Serif (headlines), Geist / Geist Mono for UI. **Even font sizes only.** Geist's latin subset has no arrow glyphs, so draw arrows as SVG.
