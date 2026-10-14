@@ -41,7 +41,7 @@ export const PHOTO_CREDITS: PhotoCredit[] = [
   },
   {
     src: '/welcome/mandela.jpg',
-    title: 'Nelson Mandela, 1994',
+    title: 'Nelson Mandela in Washington, DC, October 1994',
     author: 'Kingkongphoto & www.celebrity-photos.com',
     licence: 'CC BY-SA 2.0',
     licenceUrl: 'https://creativecommons.org/licenses/by-sa/2.0/',
