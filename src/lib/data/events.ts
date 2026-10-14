@@ -1,4 +1,5 @@
 import type { HistoricalEvent } from '@/types'
+import { getDatedEvents, isLocal, type DayEvent } from './dayEvents'
 
 interface WikiPage {
   title: string
@@ -115,8 +116,9 @@ function firstSentence(text: string): string {
 }
 
 function toHistoricalEvent(e: WikiEvent): HistoricalEvent {
+  const title = firstSentence(e.text)
   return {
-    title: firstSentence(e.text),
+    title: title.charAt(0).toUpperCase() + title.slice(1),
     description: e.text,
     year: e.year,
     wikiUrl: e.pages?.[0]?.content_urls?.desktop?.page,
@@ -264,9 +266,47 @@ export interface FrontPage {
   sameYear: boolean
 }
 
+// Rank same-day events: full sentences over bare article titles, well linked,
+// a headline-friendly length, national pages before the world list
+function rankDated(events: DayEvent[]): DayEvent[] {
+  const score = (e: DayEvent) =>
+    (e.text.length >= 40 ? 4 : 0) +
+    Math.min(e.links.length, 3) +
+    (e.source === 'country' ? 1 : 0) -
+    Math.abs(Math.min(e.text.length, 260) - 120) / 80
+  return [...events].sort((a, b) => score(b) - score(a))
+}
+
+/** Photo and one-line summary from the event's main linked article (not a place or date) */
+async function summaryFor(links: string[]): Promise<{ thumbnail?: string; extract?: string; url?: string }> {
+  const candidates = links.filter(l => !/^\d{4}$|^(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}$/.test(l)).slice(0, 3)
+  for (const title of candidates) {
+    try {
+      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g, '_'))}`, {
+        headers: { 'User-Agent': 'ThatDay/1.0 (time-capsule app)' },
+        next: { revalidate: 86400 },
+      })
+      if (!res.ok) continue
+      const p: { type?: string; description?: string; extract?: string; thumbnail?: { source?: string }; content_urls?: { desktop?: { page?: string } } } = await res.json()
+      if (p.type === 'disambiguation' || /\b(country|city|capital|state|province|continent|town|region|island)\b/i.test(p.description ?? '')) continue
+      return { thumbnail: p.thumbnail?.source, extract: p.extract ? firstSentence(p.extract) : undefined, url: p.content_urls?.desktop?.page }
+    } catch {}
+  }
+  return {}
+}
+
+function datedToEvent(e: DayEvent, year: number): HistoricalEvent {
+  let title = firstSentence(e.text.replace(/\s*See also\b.*$/i, ''))
+  title = title.charAt(0).toUpperCase() + title.slice(1)
+  return { title: title.length > 200 ? title.slice(0, 197).replace(/\s+\S*$/, '') + '…' : title, description: e.text, year }
+}
+
 /**
- * Headlines for the Results "front page": events from the chosen year first,
- * then the nearest earlier years, then anything else on this calendar day.
+ * Headlines for the Results "front page", most exact first:
+ *  1. the day's curated Wikipedia events from that year (with photos), in the country
+ *  2. events dated to that exact day in the country (year / country / timeline pages)
+ *  3. for a country with nothing that day, the day's world news
+ *  4. otherwise "on this day" from the nearest earlier year (labelled as such)
  */
 export async function getFrontPage(
   month: number,
@@ -276,24 +316,52 @@ export async function getFrontPage(
 ): Promise<FrontPage | null> {
   try {
     const lang = COUNTRY_LANG[country] ?? 'en'
-    const res = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`, {
-      headers: { 'User-Agent': 'ThatDay/1.0 (time-capsule app)' },
-      next: { revalidate: 86400 },
-    })
-    if (!res.ok) return null
-    const data: WikiResponse = await res.json()
-    let events = (data.events ?? []).filter(e => e.text && e.year && e.year <= year)
+    const [feed, dated] = await Promise.all([
+      fetch(`https://${lang}.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`, {
+        headers: { 'User-Agent': 'ThatDay/1.0 (time-capsule app)' },
+        next: { revalidate: 86400 },
+      })
+        .then((r): Promise<WikiResponse> | WikiResponse => (r.ok ? r.json() : {}))
+        .catch((): WikiResponse => ({})),
+      getDatedEvents(year, month, day, country),
+    ])
+    // Modern history only: a 1975 postcard shouldn't lead with 193 AD
+    const all = (feed.events ?? []).filter(e => e.text && e.year >= 1900)
+    const inCountry = all.filter(e => isLocal(e.text, country))
 
-    const keywords = country !== 'world' ? (COUNTRY_KEYWORDS[country] ?? []) : []
-    if (keywords.length) {
-      const local = events.filter(e => matchesCountry(e.text, keywords))
-      if (local.length) events = local
+    // 1. Curated same-year event in the country, with its photo and summary
+    const curated = inCountry.filter(e => e.year === year)
+    const local = rankDated(dated.local)
+    const world = country === 'world' ? [] : rankDated(dated.world)
+    const sameDay = [...local, ...world]
+
+    if (curated.length || sameDay.length) {
+      if (curated.length) {
+        const [lead, ...rest] = curated
+        const page = lead.pages?.find(p => p.thumbnail?.source) ?? lead.pages?.[0]
+        return {
+          lead: { ...toHistoricalEvent(lead), thumbnail: page?.thumbnail?.source, summary: page?.extract ? firstSentence(page.extract) : undefined },
+          more: [...rest.map(toHistoricalEvent), ...sameDay.map(e => datedToEvent(e, year))].slice(0, 2),
+          sameYear: true,
+        }
+      }
+      // 2 / 3. Dated to this exact day: in the country if anything, else the world
+      const pool = local.length ? local : world
+      const [lead, ...rest] = pool
+      const extra = await summaryFor(lead.links)
+      return {
+        lead: { ...datedToEvent(lead, year), thumbnail: extra.thumbnail, wikiUrl: extra.url, summary: extra.extract },
+        more: rest.slice(0, 2).map(e => datedToEvent(e, year)),
+        sameYear: true,
+      }
     }
-    if (!events.length) return null
 
-    // Closest to the chosen year wins; ties go to the one with a photo
-    events.sort((a, b) => year - a.year - (year - b.year) || Number(!!b.pages?.[0]?.thumbnail) - Number(!!a.pages?.[0]?.thumbnail))
-
+    // 4. Nothing dated to that day: this calendar day in the nearest year,
+    // in the country if possible, earlier years before later ones
+    const pool = inCountry.length ? inCountry : all
+    if (!pool.length) return null
+    const distance = (e: WikiEvent) => (e.year <= year ? year - e.year : 1000 + e.year - year)
+    const events = [...pool].sort((a, b) => distance(a) - distance(b) || Number(!!b.pages?.[0]?.thumbnail) - Number(!!a.pages?.[0]?.thumbnail))
     const [lead, ...rest] = events
     const page = lead.pages?.find(p => p.thumbnail?.source) ?? lead.pages?.[0]
     return {
@@ -345,9 +413,8 @@ export async function getDayHighlights(
       e => e.text && e.year >= 1950 && e.year < thisYear && !seen.has(e.text) && seen.add(e.text),
     )
 
-    const keywords = country !== 'world' ? (COUNTRY_KEYWORDS[country] ?? []) : []
-    if (keywords.length) {
-      const local = events.filter(e => matchesCountry(e.text, keywords))
+    if (country !== 'world') {
+      const local = events.filter(e => isLocal(e.text, country))
       if (local.length >= 3) events = local
     }
 
