@@ -5,6 +5,7 @@ import Image from 'next/image'
 import type { PriceComparison } from '@/lib/data/costs'
 import { CardStamp, InkLines, LongArrow, MaskIcon, Postmark, PostageStamp, STAMP_INK, Sticker } from './art'
 import type { StoryData } from './types'
+import { countStamps, stampsTodo, type StampKey, type Stamps } from './stamps'
 import { feel } from '@/lib/feedback'
 
 // Figma 12 · 3–8: one keepsake per card. Children with `story-in` and a --i
@@ -242,7 +243,7 @@ export function SongCard({
 
 // ── 5 · Front page ────────────────────────────────────────────────────────────
 
-export function FrontPageCard({ data }: { data: StoryData }) {
+export function FrontPageCard({ data, onMore }: { data: StoryData; onMore?: () => void }) {
   const front = data.front
   const stories = front ? [{ headline: front.headline, year: front.year }, ...front.more] : []
   const [index, setIndex] = useState(0)
@@ -292,6 +293,7 @@ export function FrontPageCard({ data }: { data: StoryData }) {
             onClick={e => {
               e.stopPropagation()
               setIndex(n => (n + 1) % stories.length)
+              onMore?.()
             }}
             className="story-in flex h-[52px] items-center rounded-full border-[1.5px] border-ink px-[26px] text-[16px] font-medium transition-transform duration-150 ease-out active:scale-[0.97]"
             style={i(6)}
@@ -372,24 +374,10 @@ export function PricesCard({ data }: { data: StoryData }) {
 
 // ── 7 · Stamp card ────────────────────────────────────────────────────────────
 
-export type StampKey = 'song' | 'front' | 'prices' | 'twins' | 'years' | 'share'
+const STAMP_ORDER: StampKey[] = ['song', 'front', 'prices', 'saved', 'explorer', 'share']
 
-export function stampsFor(data: StoryData, shared: boolean): Record<StampKey, boolean> {
-  return {
-    song: !!data.song,
-    front: !!data.front,
-    prices: data.prices.items.length > 0,
-    twins: data.twins,
-    years: true,
-    share: shared,
-  }
-}
-
-const STAMP_ORDER: StampKey[] = ['song', 'front', 'prices', 'twins', 'years']
-
-export function StampsCard({ data, shared }: { data: StoryData; shared: boolean }) {
-  const got = stampsFor(data, shared)
-  const count = Object.values(got).filter(Boolean).length
+export function StampsCard({ data, stamps: got }: { data: StoryData; stamps: Stamps }) {
+  const count = countStamps(got)
   const g = data.genZ
 
   // Each collected stamp lands with a thud as it presses in
@@ -403,31 +391,28 @@ export function StampsCard({ data, shared }: { data: StoryData; shared: boolean 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const icon = (halftone: string, sticker: string, box: { x: number; y: number; w: number; h: number }, size = 'top-[21px] left-[15px] size-[58px]') =>
-    g ? (
-      <Image src={sticker} alt="" width={Math.ceil(box.w)} height={Math.ceil(box.h)} className="absolute max-w-none" style={{ left: box.x, top: box.y, width: box.w, height: box.h }} />
-    ) : (
-      <MaskIcon src={halftone} className={`absolute ${size}`} color={STAMP_INK} />
-    )
+  const sticker = (src: string, box: { x: number; y: number; w: number; h: number }) => (
+    <Image src={src} alt="" width={Math.ceil(box.w)} height={Math.ceil(box.h)} className="absolute max-w-none" style={{ left: box.x, top: box.y, width: box.w, height: box.h }} />
+  )
+  const icon = (halftone: string, src: string, box: { x: number; y: number; w: number; h: number }) =>
+    g ? sticker(src, box) : <MaskIcon src={halftone} className="absolute top-[21px] left-[15px] size-[58px]" color={STAMP_INK} />
+  const word = (text: string, src: string, box: { x: number; y: number; w: number; h: number }) =>
+    g ? sticker(src, box) : <span className="absolute inset-x-0 top-[28px] text-center font-serif text-[36px] leading-[52px] italic">{text}</span>
 
-  const stamps: { key: StampKey; label: string; rot: string; body: React.ReactNode }[] = [
-    { key: 'song', label: 'The No.1', rot: '-rotate-3', body: icon('/icons/halftone/song.png', '/results/genz/stamp-cd-60.png', { x: 8, y: 14, w: 74.3, h: 74.3 }) },
-    { key: 'front', label: 'Front page', rot: 'rotate-2', body: icon('/icons/halftone/headline.png', '/results/genz/stamp-newsphone-60.png', { x: 13, y: 12, w: 62.7, h: 77 }) },
-    { key: 'prices', label: 'The prices', rot: '-rotate-1', body: icon('/icons/halftone/price.png', '/results/genz/stamp-tag-60.png', { x: 8, y: 21, w: 73.3, h: 63 }) },
-    { key: 'twins', label: 'Birthday twins', rot: 'rotate-3', body: icon('/icons/halftone/cake.png', '/results/genz/stamp-cake-71.png', { x: 7, y: 10, w: 74.3, h: 74.3 }, 'top-4 left-2.5 size-[67px]') },
+  // Collected stamps say what you got; empty ones say how to get them
+  const stamps: { key: StampKey; label: string; todo: string; rot: string; body: React.ReactNode }[] = [
     {
-      key: 'years',
-      label: `${data.yearsAgo} ${data.yearsAgo === 1 ? 'year' : 'years'}`,
-      rot: '-rotate-2',
-      body: (
-        <>
-          <span className="absolute inset-x-0 top-[26px] text-center font-serif text-[48px] leading-[48px] italic">{data.yearsAgo}</span>
-          <span className="absolute inset-x-0 top-[76px] text-center font-mono text-[10px] leading-[13px] font-medium tracking-[0.08em]">
-            {data.yearsAgo === 1 ? 'YR' : 'YRS'}
-          </span>
-        </>
-      ),
+      key: 'song',
+      label: data.song?.basis === 'hit' ? 'Song of the year' : 'The No.1',
+      todo: 'Play the song',
+      rot: '-rotate-3',
+      body: icon('/icons/halftone/song.png', '/results/genz/stamp-cd-60.png', { x: 8, y: 14, w: 74.3, h: 74.3 }),
     },
+    { key: 'front', label: 'Front page', todo: 'Read the papers', rot: 'rotate-2', body: icon('/icons/halftone/headline.png', '/results/genz/stamp-newsphone-60.png', { x: 13, y: 12, w: 62.7, h: 77 }) },
+    { key: 'prices', label: 'The prices', todo: 'Check the prices', rot: '-rotate-1', body: icon('/icons/halftone/price.png', '/results/genz/stamp-tag-60.png', { x: 8, y: 21, w: 73.3, h: 63 }) },
+    { key: 'saved', label: 'In the box', todo: 'Save it', rot: 'rotate-3', body: word('Kept', '/icons/stickers/heart.png', { x: 12, y: 18, w: 63.3, h: 64 }) },
+    { key: 'explorer', label: 'Another day', todo: 'Rewind another', rot: '-rotate-2', body: word('Again', '/icons/stickers/sparkle-blue.png', { x: 16, y: 20, w: 56.7, h: 56.7 }) },
+    { key: 'share', label: 'Sent', todo: 'Share it', rot: '', body: word('Sent', '/results/genz/stamps-smiley.png', { x: 14, y: 18, w: 59.7, h: 61.3 }) },
   ]
 
   return (
@@ -456,35 +441,25 @@ export function StampsCard({ data, shared }: { data: StoryData; shared: boolean 
         <div className="mt-5 grid grid-cols-3 justify-items-center gap-y-6">
           {stamps.map((s, n) => (
             <div key={s.key} className="flex w-[104px] flex-col items-center">
-              <span className={`stamp-press ${s.rot}`} style={{ animationDelay: `${250 + n * 120}ms` }}>
+              <span className={`${got[s.key] ? 'stamp-press' : 'block'} ${s.rot}`} style={{ animationDelay: `${250 + n * 120}ms` }}>
                 <CardStamp collected={got[s.key]} genZ={g} empty={!got[s.key]}>
-                  {got[s.key] && s.body}
+                  {got[s.key] ? (
+                    s.body
+                  ) : (
+                    <span className="absolute inset-x-0 top-[28px] text-center font-serif text-[40px] leading-[52px] text-ink-muted">+</span>
+                  )}
                 </CardStamp>
               </span>
-              <span className={`mt-2.5 text-[12px] leading-4 ${got[s.key] ? 'text-ink-secondary' : 'text-ink-muted'}`}>{s.label}</span>
+              <span className={`mt-2.5 text-[12px] leading-4 ${got[s.key] ? 'text-ink-secondary' : 'text-ink-muted'}`}>
+                {got[s.key] ? s.label : s.todo}
+              </span>
             </div>
           ))}
-          <div className="flex w-[104px] flex-col items-center">
-            <span className={got.share ? 'stamp-press' : ''} style={{ animationDelay: '0ms' }}>
-              <CardStamp collected={got.share} genZ={g} empty={!got.share}>
-                {got.share ? (
-                  g ? (
-                    <Image src="/results/genz/stamps-smiley.png" alt="" width={60} height={62} className="absolute top-[18px] left-[14px] max-w-none" style={{ width: 59.7, height: 61.3 }} />
-                  ) : (
-                    <span className="absolute inset-x-0 top-[28px] text-center font-serif text-[36px] leading-[52px] italic">Sent</span>
-                  )
-                ) : (
-                  <span className="absolute inset-x-0 top-[28px] text-center font-serif text-[40px] leading-[52px] text-ink-muted">+</span>
-                )}
-              </CardStamp>
-            </span>
-            <span className={`mt-2.5 text-[12px] leading-4 ${got.share ? 'text-ink-secondary' : 'text-ink-muted'}`}>Share it</span>
-          </div>
         </div>
       </div>
 
       <p className="story-in mt-7 text-center font-serif text-[18px] leading-[23px] text-ink-secondary italic" style={i(6)}>
-        {got.share ? 'Every stamp collected. Nicely done.' : 'Share your postcard to collect the last one.'}
+        {stampsTodo(got) ?? 'Every stamp collected. Nicely done.'}
       </p>
       <div className="mt-auto pt-8">
         <Hint />
@@ -509,22 +484,8 @@ function mrz(s: string) {
   return s.toUpperCase().replace(/[^A-Z0-9]+/g, '')
 }
 
-export function PassportCard({
-  data,
-  shared,
-  saved,
-  onSend,
-  onSave,
-  onPickAnother,
-}: {
-  data: StoryData
-  shared: boolean
-  saved: boolean
-  onSend: () => void
-  onSave: () => void
-  onPickAnother: () => void
-}) {
-  const count = Object.values(stampsFor(data, shared)).filter(Boolean).length
+/** The passport itself: the story's last card, and what a friend sees on the share page */
+export function Passport({ data, last, className = '' }: { data: StoryData; last: [string, string]; className?: string }) {
   const firstPrice = data.prices.items[0]
   const dd = String(data.day).padStart(2, '0')
   const dateShort = `${dd} ${MONTHS[data.month].charAt(0)}${MONTHS[data.month].slice(1).toLowerCase()} ${data.year}`
@@ -532,66 +493,86 @@ export function PassportCard({
   const line2 = `${mrz(data.song?.title ?? 'NOSONG')}<<${mrz(data.front?.headline ?? 'QUIETDAY')}`.slice(0, 37).padEnd(37, '<')
 
   return (
+    <div className={`story-drop relative overflow-hidden rounded-[20px] border border-ink bg-card shadow-[0_16px_32px_rgba(0,0,0,0.08)] ${className}`} style={i(1)}>
+      <div className="relative h-[140px] overflow-hidden bg-canvas">
+        {data.genZ ? (
+          PASSPORT_STICKERS.map((s, n) => <Sticker key={s.src} {...s} delay={300 + n * 60} />)
+        ) : data.front?.photo ? (
+          <Image src={data.front.photo} alt="" fill sizes="342px" className="object-cover grayscale" />
+        ) : (
+          <MaskIcon src="/icons/halftone/song.png" className="absolute top-4 left-1/2 size-28 -translate-x-1/2 text-ink" />
+        )}
+      </div>
+      <Postmark day={dd} month={MONTHS[data.month]} year={data.year} className="absolute top-[118px] left-[196px] -rotate-10 text-ink opacity-70" />
+      <span className="story-stamp absolute top-[104px] left-[262px] rotate-4" style={i(4)}>
+        <PostageStamp genZ={data.genZ} value={data.stampValue} />
+      </span>
+
+      <div className="relative px-5 pt-5">
+        <p className="font-mono text-[12px] leading-4 font-medium tracking-[0.08em]">MY THATDAY PASSPORT</p>
+        <p className="mt-0.5 font-mono text-[8px] leading-[10px] font-medium tracking-[0.08em] text-ink-muted">POSTCARD · PASSPORT · KEEPSAKE</p>
+        <div className="mt-2 flex">
+          <div className="w-[148px]">
+            <p className="font-serif text-[64px] leading-[64px]">{data.yearsAgo}</p>
+            <p className="-mt-1 font-serif text-[24px] leading-[24px] italic">{data.yearsAgo === 1 ? 'year back' : 'years back'}</p>
+          </div>
+          <dl className="mt-1.5 grid flex-1 grid-cols-[auto_1fr] gap-x-3 gap-y-3 text-[12px] leading-4">
+            <dt className="text-ink-secondary">Date</dt>
+            <dd className="text-right font-medium">{dateShort}</dd>
+            <dt className="text-ink-secondary">Region</dt>
+            <dd className="truncate text-right font-medium">{data.countryName}</dd>
+            <dt className="text-ink-secondary">Issued</dt>
+            <dd className="text-right font-medium">{data.issued}</dd>
+          </dl>
+        </div>
+        <span className="mt-4 block h-px bg-line" />
+        <div className="mt-[15px] grid grid-cols-2 gap-x-2.5 gap-y-[18px] pb-6">
+          {[
+            [data.song?.basis === 'hit' ? 'Song of the year' : 'No.1 song', data.song?.title ?? '—'],
+            ['Front page', data.front?.headline ?? '—'],
+            [firstPrice?.label ?? 'Prices', firstPrice ? price(firstPrice.then, data.prices.currencySymbol, firstPrice.cents) : '—'],
+            last,
+          ].map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <p className="font-mono text-[8px] leading-[10px] font-medium tracking-[0.08em] text-ink-muted uppercase">{label}</p>
+              <p className="mt-1 truncate font-serif text-[20px] leading-5">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="bg-canvas px-5 pt-3 pb-[22px]">
+        <p className="font-mono text-[10px] leading-[15px] font-medium tracking-[0.06em] break-all">
+          {line1}
+          <br />
+          {line2}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export function PassportCard({
+  data,
+  stamps,
+  saved,
+  onSend,
+  onSave,
+  onPickAnother,
+}: {
+  data: StoryData
+  stamps: Stamps
+  saved: boolean
+  onSend: () => void
+  onSave: () => void
+  onPickAnother: () => void
+}) {
+  return (
     <div className="flex flex-1 flex-col">
       <h2 className="story-in mt-9 text-center font-serif text-[32px] leading-[35px] tracking-[-0.01em]" style={i(0)}>
         Your day, stamped and sealed
       </h2>
 
-      <div className="story-drop relative mt-[21px] overflow-hidden rounded-[20px] border border-ink bg-card shadow-[0_16px_32px_rgba(0,0,0,0.08)]" style={i(1)}>
-        <div className="relative h-[140px] overflow-hidden bg-canvas">
-          {data.genZ ? (
-            PASSPORT_STICKERS.map((s, n) => <Sticker key={s.src} {...s} delay={300 + n * 60} />)
-          ) : data.front?.photo ? (
-            <Image src={data.front.photo} alt="" fill sizes="342px" className="object-cover grayscale" />
-          ) : (
-            <MaskIcon src="/icons/halftone/song.png" className="absolute top-4 left-1/2 size-28 -translate-x-1/2 text-ink" />
-          )}
-        </div>
-        <Postmark day={dd} month={MONTHS[data.month]} year={data.year} className="absolute top-[118px] left-[196px] -rotate-10 text-ink opacity-70" />
-        <span className="story-stamp absolute top-[104px] left-[262px] rotate-4" style={i(4)}>
-          <PostageStamp genZ={data.genZ} value={data.stampValue} />
-        </span>
-
-        <div className="relative px-5 pt-5">
-          <p className="font-mono text-[12px] leading-4 font-medium tracking-[0.08em]">MY THATDAY PASSPORT</p>
-          <p className="mt-0.5 font-mono text-[8px] leading-[10px] font-medium tracking-[0.08em] text-ink-muted">POSTCARD · PASSPORT · KEEPSAKE</p>
-          <div className="mt-2 flex">
-            <div className="w-[148px]">
-              <p className="font-serif text-[64px] leading-[64px]">{data.yearsAgo}</p>
-              <p className="-mt-1 font-serif text-[24px] leading-[24px] italic">{data.yearsAgo === 1 ? 'year back' : 'years back'}</p>
-            </div>
-            <dl className="mt-1.5 grid flex-1 grid-cols-[auto_1fr] gap-x-3 gap-y-3 text-[12px] leading-4">
-              <dt className="text-ink-secondary">Date</dt>
-              <dd className="text-right font-medium">{dateShort}</dd>
-              <dt className="text-ink-secondary">Region</dt>
-              <dd className="truncate text-right font-medium">{data.countryName}</dd>
-              <dt className="text-ink-secondary">Issued</dt>
-              <dd className="text-right font-medium">{data.issued}</dd>
-            </dl>
-          </div>
-          <span className="mt-4 block h-px bg-line" />
-          <div className="mt-[15px] grid grid-cols-2 gap-x-2.5 gap-y-[18px] pb-6">
-            {[
-              [data.song?.basis === 'hit' ? 'Song of the year' : 'No.1 song', data.song?.title ?? '—'],
-              ['Front page', data.front?.headline ?? '—'],
-              [firstPrice?.label ?? 'Prices', firstPrice ? price(firstPrice.then, data.prices.currencySymbol, firstPrice.cents) : '—'],
-              ['Stamps', `${count} of 6`],
-            ].map(([label, value]) => (
-              <div key={label} className="min-w-0">
-                <p className="font-mono text-[8px] leading-[10px] font-medium tracking-[0.08em] text-ink-muted uppercase">{label}</p>
-                <p className="mt-1 truncate font-serif text-[20px] leading-5">{value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="bg-canvas px-5 pt-3 pb-[22px]">
-          <p className="font-mono text-[10px] leading-[15px] font-medium tracking-[0.06em] break-all">
-            {line1}
-            <br />
-            {line2}
-          </p>
-        </div>
-      </div>
+      <Passport data={data} last={['Stamps', `${countStamps(stamps)} of 6`]} className="mt-[21px]" />
 
       <div className="mt-auto flex flex-col gap-[20px] pt-7">
         <div className="story-in flex gap-2" style={i(6)}>

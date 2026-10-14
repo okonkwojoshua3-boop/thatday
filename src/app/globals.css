@@ -521,6 +521,11 @@ html:not([data-splash]) .welcome-reveal {
   animation: splash-rise 260ms var(--ease-out) both;
 }
 
+/* Share page (Figma 09): the "NEW ✓" tag pops up once the envelope has landed */
+.share-tag {
+  animation: story-thud 360ms cubic-bezier(0.34, 1.56, 0.64, 1) 900ms backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .story-in,
   .story-drop,
@@ -529,7 +534,8 @@ html:not([data-splash]) .welcome-reveal {
   .dot-pop,
   .ticket-in,
   .stamp-press,
-  .stamp-cancel {
+  .stamp-cancel,
+  .share-tag {
     animation: splash-fade 200ms ease both;
   }
 }

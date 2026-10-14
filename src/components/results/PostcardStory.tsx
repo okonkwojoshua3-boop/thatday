@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Brand, CloseIcon } from './art'
 import { FrontPageCard, PassportCard, PricesCard, SongCard, StampsCard, YearsCard } from './cards'
 import Envelope from './Envelope'
-import { SHARED_KEY, usePostcards, useStored, type Postcard } from '@/lib/postcards'
-import { stampsFor } from './cards'
+import { SHARED_KEY, STAMPS_KEY, usePostcards, useStored, type Postcard } from '@/lib/postcards'
+import { countStamps, type StampKey, type Stamps } from './stamps'
 import SavedMoment from './SavedMoment'
 import type { StoryData } from './types'
 import { feel, haptic, play } from '@/lib/feedback'
@@ -30,11 +30,31 @@ export default function PostcardStory({ data }: { data: StoryData }) {
   const [toast, setToast] = useState<string | null>(null)
 
   const [shared, setShared] = useStored<string>(SHARED_KEY)
-  const { saved, save: savePostcard, markOpened } = usePostcards()
+  const [earned, setEarned] = useStored<string>(STAMPS_KEY)
+  const { saved, recent, save: savePostcard, restore, markOpened } = usePostcards()
   const [savedMoment, setSavedMoment] = useState(false)
   const isShared = shared.includes(data.date)
   const postcardKey = `${data.date}|${data.country}`
-  const isSaved = saved.some(p => p.key === postcardKey)
+  const savedCard = saved.find(p => p.key === postcardKey)
+  const isSaved = !!savedCard
+
+  const has = (key: StampKey) => earned.includes(`${postcardKey}|${key}`)
+  const stamps: Stamps = {
+    song: has('song'),
+    front: has('front'),
+    prices: has('prices'),
+    saved: isSaved,
+    explorer: recent.some(p => p.date !== data.date) || saved.some(p => p.date !== data.date),
+    share: isShared,
+  }
+  const stampCount = countStamps(stamps)
+  const earn = useCallback(
+    (key: StampKey) => {
+      const id = `${postcardKey}|${key}`
+      setEarned(prev => (prev.includes(id) ? prev : [...prev, id]))
+    },
+    [postcardKey, setEarned],
+  )
 
   const snapshot = useCallback(
     (): Postcard => ({
@@ -46,11 +66,11 @@ export default function PostcardStory({ data }: { data: StoryData }) {
       song: data.song?.title ?? null,
       photo: data.front?.photo ?? null,
       genZ: data.genZ,
-      stamps: Object.values(stampsFor(data, shared.includes(data.date))).filter(Boolean).length,
+      stamps: stampCount,
       stampValue: data.stampValue,
       cardId: data.cardId,
     }),
-    [data, postcardKey, shared],
+    [data, postcardKey, stampCount],
   )
 
   const last = CARDS.length - 1
@@ -67,6 +87,27 @@ export default function PostcardStory({ data }: { data: StoryData }) {
     shown.current = index
   }, [opened, index])
   useEffect(() => () => stopSoundtrack(), [])
+
+  // Seeing a card earns its stamp when there's nothing more to do on it
+  useEffect(() => {
+    if (!opened) return
+    if (card === 'prices') earn('prices')
+    if (card === 'song' && !data.song?.previewUrl) earn('song')
+    if (card === 'front' && !data.front?.more.length) earn('front')
+  }, [opened, card, data, earn])
+
+  // Keep the box's copy of this postcard up to date as stamps come in
+  useEffect(() => {
+    if (savedCard && savedCard.stamps !== stampCount) restore({ ...savedCard, stamps: stampCount })
+  }, [savedCard, stampCount, restore])
+
+  const onPlayingChange = useCallback(
+    (value: boolean) => {
+      setPlaying(value)
+      if (value) earn('song')
+    },
+    [earn],
+  )
 
   const next = useCallback(() => setIndex(n => Math.min(last, n + 1)), [last])
   const prev = useCallback(() => setIndex(n => Math.max(0, n - 1)), [])
@@ -92,7 +133,7 @@ export default function PostcardStory({ data }: { data: StoryData }) {
         flash('Link copied')
       }
       if (!isShared) {
-        flash('Last stamp collected')
+        flash(stampCount === 5 ? 'Last stamp collected' : 'Stamp collected')
         feel('thud', 'success')
       }
       setShared(prev => (prev.includes(data.date) ? prev : [...prev, data.date]))
@@ -103,7 +144,7 @@ export default function PostcardStory({ data }: { data: StoryData }) {
   }
 
   function save() {
-    if (!isSaved) savePostcard(snapshot())
+    if (!isSaved) savePostcard({ ...snapshot(), stamps: countStamps({ ...stamps, saved: true }) })
     setSavedMoment(true)
   }
 
@@ -205,12 +246,12 @@ export default function PostcardStory({ data }: { data: StoryData }) {
 
         <section key={card} aria-live="polite" className="flex flex-1 flex-col">
           {card === 'years' && <YearsCard data={data} />}
-          {card === 'song' && <SongCard data={data} onPlayingChange={setPlaying} />}
-          {card === 'front' && <FrontPageCard data={data} />}
+          {card === 'song' && <SongCard data={data} onPlayingChange={onPlayingChange} />}
+          {card === 'front' && <FrontPageCard data={data} onMore={() => earn('front')} />}
           {card === 'prices' && <PricesCard data={data} />}
-          {card === 'stamps' && <StampsCard data={data} shared={isShared} />}
+          {card === 'stamps' && <StampsCard data={data} stamps={stamps} />}
           {card === 'passport' && (
-            <PassportCard data={data} shared={isShared} saved={isSaved} onSend={send} onSave={save} onPickAnother={pickAnother} />
+            <PassportCard data={data} stamps={stamps} saved={isSaved} onSend={send} onSave={save} onPickAnother={pickAnother} />
           )}
         </section>
 

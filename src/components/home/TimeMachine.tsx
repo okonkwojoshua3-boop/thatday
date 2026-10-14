@@ -11,6 +11,7 @@ import { feel, haptic, play } from '@/lib/feedback'
 import SoundToggle from '@/components/ui/SoundToggle'
 import FlipBoard, { type BoardGroup, type DateUnit } from './FlipBoard'
 import RingDial from './RingDial'
+import PhotoCredits from '@/components/ui/PhotoCredits'
 
 // Figma 03 — Date picker · Time Machine
 
@@ -291,13 +292,16 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
           You landed on · {surprise.date.d} {MONTHS[surprise.date.m]} {surprise.date.y}
         </span>
         <span className="mt-1 font-serif text-[22px] leading-[24px] text-ink">{surprise.text}</span>
-        <button
-          type="button"
-          onClick={spin}
-          className="mt-2.5 flex items-center gap-1.5 text-[12px] font-medium text-ink-secondary transition-colors hover:text-ink"
-        >
-          <SpinIcon /> Spin again
-        </button>
+        <span className="mt-2.5 flex items-center gap-3 text-[12px]">
+          <button
+            type="button"
+            onClick={spin}
+            className="flex items-center gap-1.5 font-medium text-ink-secondary transition-colors hover:text-ink"
+          >
+            <SpinIcon /> Spin again
+          </button>
+          <PhotoCredits className="text-ink-muted" />
+        </span>
       </span>
     </div>
   )
