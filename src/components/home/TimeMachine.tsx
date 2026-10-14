@@ -12,6 +12,7 @@ import SoundToggle from '@/components/ui/SoundToggle'
 import FlipBoard, { type BoardGroup, type DateUnit } from './FlipBoard'
 import RingDial from './RingDial'
 import PhotoCredits from '@/components/ui/PhotoCredits'
+import { pickSurprise, SURPRISES, type Surprise } from '@/lib/surprises'
 
 // Figma 03 — Date picker · Time Machine
 
@@ -29,15 +30,6 @@ const PRECISIONS: { id: Precision; label: string }[] = [
   { id: 'full', label: 'Full date' },
   { id: 'month', label: 'Month & year' },
   { id: 'year', label: 'Year' },
-]
-
-// "Surprise me" lands on one of these. Placeholder set until the teaser can
-// pull a headline for any day.
-const SURPRISES = [
-  { date: { y: 1969, m: 6, d: 20 }, text: 'Apollo 11 lands on the Moon.', src: '/welcome/moon.jpg' },
-  { date: { y: 1989, m: 10, d: 9 }, text: 'The Berlin Wall falls.', src: '/welcome/berlin.jpg' },
-  { date: { y: 1994, m: 4, d: 10 }, text: 'Mandela is sworn in as president.', src: '/welcome/mandela.jpg' },
-  { date: { y: 1967, m: 3, d: 28 }, text: 'Muhammad Ali refuses the draft.', src: '/welcome/ali.jpg' },
 ]
 
 const SPIN_MS = 700
@@ -78,7 +70,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
   const [active, setActive] = useState<DateUnit>('year')
   const [precision, setPrecision] = useState<Precision>('full')
   const [dragFrom, setDragFrom] = useState<number | null>(null)
-  const [surprise, setSurprise] = useState<(typeof SURPRISES)[number] | null>(null)
+  const [surprise, setSurprise] = useState<Surprise | null>(null)
   const [spinning, setSpinning] = useState(false)
 
   // Only ever rendered after the Welcome step, so localStorage is available
@@ -166,7 +158,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
   function spin() {
     if (spinning) return
     const options = SURPRISES.filter(s => s !== surprise && clamp(s.date, max).y === s.date.y)
-    const pick = options[Math.floor(Math.random() * options.length)]
+    const pick = pickSurprise(options, country)
     setPrecision('full')
     setActive('year')
     setSurprise(null)
@@ -300,7 +292,7 @@ export default function TimeMachine({ onBack }: { onBack: () => void }) {
           >
             <SpinIcon /> Spin again
           </button>
-          <PhotoCredits className="text-ink-muted" />
+          <PhotoCredits className="text-ink-muted" first={surprise.src} />
         </span>
       </span>
     </div>

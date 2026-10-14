@@ -59,7 +59,9 @@ Remote image hosts must be allowed in `next.config.ts` `images.remotePatterns` (
 
 **Stamp card (`src/components/results/stamps.ts`)**: six stamps earned by doing things, never by data coverage: play the song preview, read another headline, see the prices, save, have opened another day, send. A card with nothing to do (no preview, no other headlines) earns its stamp by being seen. Empty stamps show the action, collected ones what you got. `PostcardStory` computes them and keeps the saved postcard's count in sync.
 
-**Photo credits**: the `public/welcome/` photos come from Wikimedia Commons; two are CC BY-SA, so `src/lib/photoCredits.ts` lists author, licence, source and changes, shown by `components/ui/PhotoCredits` (Welcome footer and the Surprise me teaser). Adding a photo means adding its credit.
+**Photo credits**: the `public/welcome/` and `public/surprise/` photos come from Wikimedia Commons (public domain or CC BY / BY-SA only), so `src/lib/photoCredits.ts` lists author, licence, source and changes, shown by `components/ui/PhotoCredits` (Welcome footer and the Surprise me teaser, which lists the photo on screen first). Adding a photo means adding its credit.
+
+**Surprise me** (`src/lib/surprises.ts`): hand-picked moments with dates checked against Wikipedia, tagged by country; `pickSurprise` makes the picked country's moments four times as likely. Where no free photo of the event exists the photo shows its main person or place, and the credit title says what it actually shows.
 
 **Countries**: 14 codes (`world, us, gb, ca, au, de, fr, in, jp, ng, gh, ke, za, br`). The list, regions, round flag assets (`public/flags/`) and `detectCountry()` (time zone first, then locale) live in `src/lib/countries.ts`. The data modules' lookup tables duplicate the codes; keep them in sync.
 
