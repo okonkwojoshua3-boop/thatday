@@ -83,14 +83,26 @@ function audio() {
   return ctx
 }
 
-// Browsers only start audio inside a gesture: unlock on the first touch or key
+// Browsers only start audio inside a gesture. On phones a touch only counts once
+// the finger lifts (pointerup / touchend / click), not on pointerdown, so listen
+// to all of them. Older iOS also needs a sound started inside that gesture.
 if (typeof window !== 'undefined') {
+  let primed = false
   const unlock = () => {
     const c = audio()
-    if (c?.state === 'suspended') c.resume().catch(() => {})
+    if (!c) return
+    if (c.state !== 'running') c.resume().catch(() => {})
+    if (!primed) {
+      primed = true
+      const silent = c.createBufferSource()
+      silent.buffer = c.createBuffer(1, 1, c.sampleRate)
+      silent.connect(c.destination)
+      silent.start()
+    }
   }
-  window.addEventListener('pointerdown', unlock, { capture: true, passive: true })
-  window.addEventListener('keydown', unlock, { capture: true })
+  for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
+    window.addEventListener(type, unlock, { capture: true, passive: true })
+  }
 }
 
 /** A filtered noise burst with a fast attack and exponential decay */
