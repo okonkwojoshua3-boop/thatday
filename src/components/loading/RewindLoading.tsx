@@ -126,8 +126,8 @@ function Rewinding({ target, now, elapsed }: { target: { y: number; m: number; d
               key={s.src}
               src={s.src}
               alt=""
-              width={Math.ceil(s.w)}
-              height={Math.ceil(s.h)}
+              width={Math.round(s.w)}
+              height={Math.round(s.h)}
               priority
               className="sticker-drift absolute max-w-none"
               style={{ left: s.x, top: s.y, width: s.w, height: s.h, animationDelay: `${s.delay}ms` }}
@@ -181,8 +181,8 @@ function Rewinding({ target, now, elapsed }: { target: { y: number; m: number; d
                   <Image
                     src={step.sticker.src}
                     alt=""
-                    width={Math.ceil(step.sticker.w)}
-                    height={Math.ceil(step.sticker.h)}
+                    width={Math.round(step.sticker.w)}
+                    height={Math.round(step.sticker.h)}
                     priority
                     className="absolute max-w-none"
                     style={{ left: step.sticker.x, top: step.sticker.y, width: step.sticker.w, height: step.sticker.h }}

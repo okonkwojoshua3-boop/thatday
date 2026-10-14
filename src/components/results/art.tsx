@@ -48,8 +48,8 @@ export function Sticker({
       src={src}
       alt=""
       aria-hidden="true"
-      width={Math.ceil(w)}
-      height={Math.ceil(h)}
+      width={Math.round(w)}
+      height={Math.round(h)}
       className={`sticker-drift pointer-events-none absolute max-w-none ${className}`}
       style={{ left: x, top: y, width: w, height: h, animationDelay: `${delay}ms` }}
     />

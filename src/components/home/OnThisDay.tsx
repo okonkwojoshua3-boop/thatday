@@ -220,8 +220,8 @@ export default function OnThisDay({ onPick }: { onPick: () => void }) {
                   key={s.src}
                   src={s.src}
                   alt=""
-                  width={Math.ceil(s.w)}
-                  height={Math.ceil(s.h)}
+                  width={Math.round(s.w)}
+                  height={Math.round(s.h)}
                   className="sticker-drift pointer-events-none absolute max-w-none"
                   style={{ left: s.x, top: s.y - 232, width: s.w, height: s.h, animationDelay: `${200 + n * 60}ms` }}
                 />
