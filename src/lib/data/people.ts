@@ -226,6 +226,38 @@ async function searchWikidataBornOn(month: number, day: number, country: string)
   }
 }
 
+/**
+ * Whether anyone notable shares this birthday (the "Birthday twins" stamp).
+ * Much cheaper than getPeopleForDate: no photos, and the Wikidata scan is a
+ * capped yes/no question that only runs when Wikipedia's list has no match.
+ */
+export async function hasBirthdayTwins(month: number, day: number, country = 'world'): Promise<boolean> {
+  try {
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/births/${month}/${day}`, {
+      headers: { 'User-Agent': 'ThatDay/1.0 (time-capsule app)' },
+      next: { revalidate: 86400 },
+    })
+    const data: WikiResponse = res.ok ? await res.json() : {}
+    const all = (data.births ?? []).filter((b) => b.pages?.[0])
+    if (country === 'world') return all.length > 0
+
+    const keywords = COUNTRY_KEYWORDS[country] ?? []
+    if (all.some((b) => matchesPerson(b.pages?.[0]?.description, b.text, keywords))) return true
+
+    const qid = WIKIDATA_COUNTRY_QID[country]
+    if (!qid) return false
+    const ask = `ASK { ?p wdt:P27 wd:${qid}; wdt:P569 ?b. FILTER(MONTH(?b) = ${month} && DAY(?b) = ${day}) ?a schema:about ?p; schema:isPartOf <https://en.wikipedia.org/>. }`
+    const wd = await fetch(`https://query.wikidata.org/sparql?query=${encodeURIComponent(ask)}`, {
+      headers: { Accept: 'application/sparql-results+json', 'User-Agent': 'ThatDay/1.0 (time-capsule app)' },
+      next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(2000),
+    })
+    return wd.ok ? Boolean((await wd.json()).boolean) : false
+  } catch {
+    return false
+  }
+}
+
 export async function getPeopleForDate(
   month: number,
   day: number,
