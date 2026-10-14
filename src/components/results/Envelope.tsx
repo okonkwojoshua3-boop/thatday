@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Brand, MaskIcon, Postmark, PostageStamp, Sticker } from './art'
 import type { StoryData } from './types'
 import { feel, play } from '@/lib/feedback'
+import { startSoundtrack } from '@/lib/soundtrack'
 
 // Figma 12 · 1–2: the day arrives as mail. The seal breaks, the flap swings up,
 // a postcard slides out, then the story begins.
@@ -46,6 +47,8 @@ export default function Envelope({ data, onRead }: { data: StoryData; onRead: ()
     // The seal cracks, then the flap and postcard slide
     feel('seal', 'medium')
     play('swish', 160)
+    // The story's beat comes in as the postcard slides out
+    startSoundtrack(data.genZ ? 'genz' : 'print')
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduce) {
       onRead()
@@ -53,7 +56,7 @@ export default function Envelope({ data, onRead }: { data: StoryData; onRead: ()
     }
     const t = window.setTimeout(() => setPhase('open'), OPEN_MS)
     return () => window.clearTimeout(t)
-  }, [phase, onRead])
+  }, [phase, onRead, data.genZ])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

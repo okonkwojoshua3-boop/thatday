@@ -26,7 +26,7 @@ const VIBRATE: Record<Haptic, number | number[]> = {
 const listeners = new Set<() => void>()
 let enabled: boolean | null = null
 
-function isEnabled() {
+export function isEnabled() {
   if (enabled === null) {
     try {
       enabled = localStorage.getItem(SOUND_KEY) !== 'off'
@@ -44,6 +44,14 @@ export function setSoundEnabled(on: boolean) {
   } catch {}
   listeners.forEach(l => l())
   if (on) play('pop')
+}
+
+/** Called whenever sound is switched on or off */
+export function onSoundChange(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
 }
 
 export function useSoundEnabled() {
@@ -81,6 +89,12 @@ function audio() {
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
   }
   return ctx
+}
+
+/** The shared audio graph, for the story soundtrack */
+export function audioGraph() {
+  const c = audio()
+  return c && out && noise ? { ctx: c, out, noise } : null
 }
 
 // Browsers only start audio inside a gesture. On phones a touch only counts once
