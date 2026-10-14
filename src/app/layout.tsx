@@ -11,7 +11,17 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
 });
 
+// Link previews need absolute URLs: production uses the real domain, Vercel
+// previews their own URL, local dev localhost
+const siteUrl =
+  process.env.VERCEL_ENV === 'production'
+    ? 'https://www.thatday.space'
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : `http://localhost:${process.env.PORT ?? 3000}`
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "ThatDay — Your Personal Time Capsule",
   description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
   icons: {
