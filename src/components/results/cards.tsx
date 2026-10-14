@@ -529,7 +529,7 @@ export function Passport({ data, last, className = '' }: { data: StoryData; last
         <div className="mt-[15px] grid grid-cols-2 gap-x-2.5 gap-y-[18px] pb-6">
           {[
             [data.song?.basis === 'hit' ? 'Song of the year' : 'No.1 song', data.song?.title ?? '—'],
-            ['Front page', data.front?.headline ?? '—'],
+            [data.front && !data.front.sameYear ? `Front page · ${data.front.year}` : 'Front page', data.front?.headline ?? '—'],
             [firstPrice?.label ?? 'Prices', firstPrice ? price(firstPrice.then, data.prices.currencySymbol, firstPrice.cents) : '—'],
             last,
           ].map(([label, value]) => (

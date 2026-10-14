@@ -78,7 +78,11 @@ export async function GET(req: Request, ctx: RouteContext<'/card/[id]/image'>) {
   const when = ago === 0 ? 'THIS YEAR' : `${ago} ${ago === 1 ? 'YEAR' : 'YEARS'} AGO`
   const stampValue = country === 'world' || country === 'us' ? `${usPostageCents(year)}¢` : null
   const songLine = song && `${song.basis === 'hit' ? 'Song of the year' : song.basis === 'week' ? 'No.1 this week' : `No.1 of ${song.year}`}: ${song.title} · ${song.artist}`
+  // With no news from the exact year, the front page is this calendar day in
+  // the nearest year: say so, as the story's front-page card does
+  const otherYear = front && front.lead.year !== year ? front.lead.year : null
   const headlineSize = headline.length > 70 ? 40 : headline.length > 36 ? 48 : 56
+  const headlineLines = otherYear && songLine ? 2 : 3
   // "23 April 2005" fills the line at 96px; longer dates shrink to clear the stamp
   const dateText = `${day} ${MONTHS[month - 1]} ${year}`
   const dateSize = dateText.length <= 13 ? 96 : Math.floor((96 * 12) / dateText.length)
@@ -138,15 +142,18 @@ export async function GET(req: Request, ctx: RouteContext<'/card/[id]/image'>) {
             {`${getCountry(country).name.toUpperCase()} · ${when}`}
           </div>
           <div style={{ marginTop: 20, height: 0, borderTop: `3px dashed ${LINE}`, display: 'flex' }} />
+          {otherYear && (
+            <div style={{ ...monoText, marginTop: 22, fontSize: 18, letterSpacing: 1.44, height: 24 }}>{`ON THIS DAY IN ${otherYear}`}</div>
+          )}
           <div
             style={{
-              marginTop: 25,
+              marginTop: otherYear ? 8 : 25,
               fontFamily: serifFamily,
               fontSize: headlineSize,
               lineHeight: 1,
               display: 'block',
-              lineClamp: 3,
-              maxHeight: headlineSize * 3,
+              lineClamp: headlineLines,
+              maxHeight: headlineSize * headlineLines,
               overflow: 'hidden',
             }}
           >
