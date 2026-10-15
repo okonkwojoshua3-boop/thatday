@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
@@ -43,6 +43,14 @@ export const metadata: Metadata = {
     description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
     images: ['/social-preview.png'],
   },
+};
+
+// Browser toolbar colour matches the canvas token in light and dark
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fbf8f2' },
+    { media: '(prefers-color-scheme: dark)', color: '#12110f' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
