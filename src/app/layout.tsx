@@ -25,20 +25,23 @@ export const metadata: Metadata = {
   title: "ThatDay — Your Personal Time Capsule",
   description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
   icons: {
-    icon: '/ThatDay Favicon.svg',
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+    ],
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
     title: "ThatDay — Your Personal Time Capsule",
     description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
-    images: [{ url: '/ThatDay Social Preview.png', width: 1200, height: 630 }],
+    images: [{ url: '/social-preview.png', width: 1200, height: 630, alt: 'ThatDay: Every day leaves a mark.' }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: "ThatDay — Your Personal Time Capsule",
     description: "Step back in time. Discover what happened on the day you were born — the songs, events, famous birthdays, and what things cost.",
-    images: ['/ThatDay Social Preview.png'],
+    images: ['/social-preview.png'],
   },
 };
 
