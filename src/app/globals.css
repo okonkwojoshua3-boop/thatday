@@ -391,8 +391,11 @@ html:not([data-splash]) .welcome-reveal {
 /* Opening: seal (160ms) → flap folds up (320ms) → postcard slides out (420ms) */
 [data-phase="opening"] .env-header,
 [data-phase="open"] .env-header { transform: translateY(-60px); }
+/* The envelope drops to make room for the postcard. 124px on the 844px Figma
+   frame, less on shorter screens (Safari with its toolbar is ~745px) so the
+   envelope, its stickers and "Tap to read" stay on screen. */
 [data-phase="opening"] .env-body,
-[data-phase="open"] .env-body { transform: translateY(124px); }
+[data-phase="open"] .env-body { transform: translateY(clamp(24px, calc(100svh - 710px), 124px)); }
 
 [data-phase="opening"] .env-seal,
 [data-phase="open"] .env-seal {
