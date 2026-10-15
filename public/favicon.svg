@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 184 184" width="184" height="184">
+  <path d="M0 0 L6 0 A9 9 0 0 0 24 0 L30 0 L36 0 A9 9 0 0 0 54 0 L60 0 L66 0 A9 9 0 0 0 84 0 L90 0 L96 0 A9 9 0 0 0 114 0 L120 0 L126 0 A9 9 0 0 0 144 0 L150 0 L156 0 A9 9 0 0 0 174 0 L180 0 L180 6 A9 9 0 0 0 180 24 L180 30 L180 36 A9 9 0 0 0 180 54 L180 60 L180 66 A9 9 0 0 0 180 84 L180 90 L180 96 A9 9 0 0 0 180 114 L180 120 L180 126 A9 9 0 0 0 180 144 L180 150 L180 156 A9 9 0 0 0 180 174 L180 180 L174 180 A9 9 0 0 0 156 180 L150 180 L144 180 A9 9 0 0 0 126 180 L120 180 L114 180 A9 9 0 0 0 96 180 L90 180 L84 180 A9 9 0 0 0 66 180 L60 180 L54 180 A9 9 0 0 0 36 180 L30 180 L24 180 A9 9 0 0 0 6 180 L0 180 L0 174 A9 9 0 0 0 0 156 L0 150 L0 144 A9 9 0 0 0 0 126 L0 120 L0 114 A9 9 0 0 0 0 96 L0 90 L0 84 A9 9 0 0 0 0 66 L0 60 L0 54 A9 9 0 0 0 0 36 L0 30 L0 24 A9 9 0 0 0 0 6 L0 0 Z" fill="#FBF8F2" stroke="#18181B" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="20" y="20" width="140" height="140" fill="none" stroke="#18181B" stroke-width="4"/>
+  <g fill="none" stroke="#18181B" stroke-linecap="round">
+    <circle cx="90" cy="90" r="48" stroke-width="11"/>
+    <path d="M90 48V60M132 90H120M90 132V120M48 90H60" stroke-width="11"/>
+    <path d="M90 90 73.03 73.03" stroke-width="12"/>
+    <path d="M90 90 109.14 67.2" stroke-width="9"/>
+  </g>
+  <circle cx="90" cy="90" r="8.25" fill="#18181B"/>
+</svg>
