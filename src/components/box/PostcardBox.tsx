@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation'
 import { usePostcards, useHydrated, type Postcard } from '@/lib/postcards'
 import { feel } from '@/lib/feedback'
 import PostcardCard, { PostcardPhoto, parts, savedAgo } from './PostcardCard'
+import Mixtape from './Mixtape'
 
 // Figma 14 — Postcard box: saved days stacked like a wallet, a timeline by
-// decade, a "recently opened" row and an empty state.
+// decade, the mixtape of their songs, a "recently opened" row and an empty
+// state.
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 const PITCH = 64 // visible strip of each collapsed card
@@ -20,7 +22,7 @@ export default function PostcardBox() {
   const router = useRouter()
   const hydrated = useHydrated()
   const { saved, recent, remove, restore } = usePostcards()
-  const [view, setView] = useState<'stack' | 'timeline'>('stack')
+  const [view, setView] = useState<'stack' | 'timeline' | 'mixtape'>('stack')
   const [selected, setSelected] = useState<string | null>(null)
   const [toast, setToast] = useState<{ text: string; undo?: Postcard } | null>(null)
 
@@ -82,7 +84,7 @@ export default function PostcardBox() {
           </button>
           {cards.length > 0 && !pulled && (
             <div role="radiogroup" aria-label="View" className="flex rounded-full border border-line bg-card p-[5px]">
-              {(['stack', 'timeline'] as const).map(v => (
+              {(['stack', 'timeline', 'mixtape'] as const).map(v => (
                 <button
                   key={v}
                   type="button"
@@ -129,13 +131,15 @@ export default function PostcardBox() {
                   />
                 ))}
               </div>
-            ) : (
+            ) : view === 'timeline' ? (
               <Timeline cards={cards} />
+            ) : (
+              <Mixtape cards={cards} />
             )}
 
             {unsaved.length > 0 && view === 'stack' && <RecentRow items={unsaved} />}
 
-            {cards.length > 0 && (
+            {cards.length > 0 && view !== 'mixtape' && (
               <>
                 <span className="min-h-8 flex-1" />
                 <Link
