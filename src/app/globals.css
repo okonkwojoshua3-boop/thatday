@@ -4,8 +4,11 @@
 @custom-variant short (@media (min-width: 48rem) and (max-height: 880px));
 
 :root {
-  --background: #fafaf9;
-  --foreground: #111111;
+  /* Follows the redesign tokens, so the area past the page edge (iOS overscroll,
+     toolbars collapsing) matches the screen in light and dark */
+  --background: var(--td-canvas);
+  --foreground: var(--td-ink);
+  color-scheme: light dark;
 }
 
 /* Redesign tokens (Figma "ThatDay Color"). Dark follows the device setting. */
@@ -54,6 +57,7 @@
 
 html {
   scroll-behavior: smooth;
+  background: var(--td-canvas);
 }
 
 body {
