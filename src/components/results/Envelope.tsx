@@ -105,7 +105,7 @@ export default function Envelope({
     <main
       data-phase={phase}
       onClick={phase === 'sealed' ? open : phase === 'open' ? onRead : undefined}
-      className="envelope-scene relative flex min-h-svh cursor-pointer flex-col items-center overflow-hidden bg-canvas px-6 pt-16 pb-14 text-ink select-none"
+      className="envelope-scene relative flex min-h-svh cursor-pointer flex-col items-center overflow-x-clip bg-canvas px-6 pt-16 pb-14 text-ink select-none"
     >
       <Brand />
 
