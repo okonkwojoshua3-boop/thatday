@@ -932,8 +932,8 @@ function closestYear(map: Record<number, SongEntry>, year: number): { entry: Son
 
 const MIX_KEYWORDS = ['mix', 'dj ', 'playlist', 'compilation', 'various', 'karaoke', 'tribute', 'cover version']
 
-type ItunesResult = { artworkUrl100?: string; previewUrl?: string; collectionName?: string; artistName?: string }
-type TrackMedia = { albumArt?: string; previewUrl?: string }
+type ItunesResult = { artworkUrl100?: string; previewUrl?: string; trackViewUrl?: string; collectionName?: string; artistName?: string }
+type TrackMedia = { albumArt?: string; previewUrl?: string; url?: string }
 
 function pickBestItunesResult(results: ItunesResult[], preferredArtist: string): TrackMedia | undefined {
   if (!results.length) return undefined
@@ -954,7 +954,7 @@ function pickBestItunesResult(results: ItunesResult[], preferredArtist: string):
     results[0]
 
   if (!best?.artworkUrl100) return undefined
-  return { albumArt: best.artworkUrl100.replace('100x100bb', '600x600bb'), previewUrl: best.previewUrl }
+  return { albumArt: best.artworkUrl100.replace('100x100bb', '600x600bb'), previewUrl: best.previewUrl, url: best.trackViewUrl }
 }
 
 async function fetchTrackMedia(title: string, artist: string): Promise<TrackMedia> {

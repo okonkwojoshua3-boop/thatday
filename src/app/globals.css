@@ -634,3 +634,30 @@ html[data-returning] .welcome-screen {
 @media (prefers-reduced-motion: reduce) {
   .era-pop { animation: splash-fade 200ms ease both; }
 }
+
+/* ── Postcard box · Mixtape ────────────────────────── */
+
+/* Cassette reels turn while the tape plays */
+.reel-spin {
+  animation: step-spin 2400ms linear infinite;
+}
+.reel-spin.paused {
+  animation-play-state: paused;
+}
+
+/* Now-playing bars in the track list */
+.eq-bar {
+  transform-origin: bottom;
+  animation: eq-bar 900ms var(--ease-in-out) infinite alternate;
+}
+@keyframes eq-bar {
+  from { transform: scaleY(0.3); }
+  to   { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-spin,
+  .eq-bar {
+    animation: none;
+  }
+}
